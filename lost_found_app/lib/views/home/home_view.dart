@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lost_found_app/utils/app_theme.dart';
 import 'package:lost_found_app/widgets/bottom_nav_bar.dart';
 import 'package:lost_found_app/widgets/home_header.dart';
 
@@ -8,20 +9,18 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F7FB),
+      backgroundColor: AppTheme.background,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const HomeHeader(),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 "Body",
-                style: TextStyle(
-                  color: Color(0xFF475569),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: AppTheme.textSecondary),
               ),
             ),
           ),

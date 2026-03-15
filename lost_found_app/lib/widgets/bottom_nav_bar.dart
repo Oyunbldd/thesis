@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lost_found_app/utils/app_theme.dart';
 
 enum BottomNavItem { lost, report, found }
 
@@ -21,11 +22,11 @@ class BottomNavBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFFFFF),
+            color: AppTheme.surface,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.10),
+                color: AppTheme.secondary.withValues(alpha: 0.10),
                 blurRadius: 28,
                 offset: const Offset(0, 16),
               ),
@@ -78,9 +79,10 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final Color textColor = isSelected
-        ? const Color(0xFF2563EB)
-        : const Color(0xFF64748B);
+        ? AppTheme.primary
+        : AppTheme.textSecondary;
 
     return InkWell(
       borderRadius: BorderRadius.circular(22),
@@ -101,11 +103,10 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               label,
-              style: TextStyle(
+              style: textTheme.bodyMedium?.copyWith(
                 color: textColor,
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.2,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -128,11 +129,7 @@ class _CenterAction extends StatelessWidget {
         width: 64,
         height: 64,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF38BDF8), Color(0xFF2563EB)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppTheme.primaryGradient,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
           boxShadow: const [
