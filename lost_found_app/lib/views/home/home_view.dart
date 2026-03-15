@@ -8,14 +8,28 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF3F7FB),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          HomeHeader(),
-          Expanded(child: Center(child: Text("Body"))),
+          const HomeHeader(),
+          const Expanded(
+            child: Center(
+              child: Text(
+                "Body",
+                style: TextStyle(
+                  color: Color(0xFF475569),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: const BottomNavBar(),
+      bottomNavigationBar: const BottomNavBar(
+        currentItem: BottomNavItem.report,
+      ),
     );
   }
 }
