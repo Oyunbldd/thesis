@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
+import 'report_lost_item_view.dart';
 
 const int reportLostTotal = 3;
 const int reportFoundTotal = 5;
@@ -34,11 +35,11 @@ class ReportViewBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 14, 12, 20),
-      children: const [
+      children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
+            const Expanded(
               child: _StatsCard(
                 title: 'Lost Items',
                 count: reportLostTotal,
@@ -54,7 +55,7 @@ class ReportViewBody extends StatelessWidget {
               ),
             ),
             SizedBox(width: 16),
-            Expanded(
+            const Expanded(
               child: _StatsCard(
                 title: 'Found Items',
                 count: reportFoundTotal,
@@ -71,19 +72,29 @@ class ReportViewBody extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 22),
-        _ActionPanel(),
-        SizedBox(height: 18),
-        _TipsCard(),
-        SizedBox(height: 22),
-        _RecentReportsCard(),
+        const SizedBox(height: 22),
+        _ActionPanel(
+          onLostTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ReportLostItemView(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 18),
+        const _TipsCard(),
+        const SizedBox(height: 22),
+        const _RecentReportsCard(),
       ],
     );
   }
 }
 
 class _ActionPanel extends StatelessWidget {
-  const _ActionPanel();
+  const _ActionPanel({required this.onLostTap});
+
+  final VoidCallback onLostTap;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +142,7 @@ class _ActionPanel extends StatelessWidget {
             ),
           ),
           Divider(color: AppTheme.border.withValues(alpha: 0.72), height: 1),
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
             child: _ReportActionCard(
               title: 'I Lost Something',
@@ -147,6 +158,7 @@ class _ActionPanel extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
+              onTap: onLostTap,
             ),
           ),
           const Padding(
@@ -165,6 +177,7 @@ class _ActionPanel extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
+              onTap: null,
             ),
           ),
         ],
@@ -340,6 +353,7 @@ class _ReportActionCard extends StatelessWidget {
     required this.descriptionColor,
     required this.borderColor,
     required this.background,
+    required this.onTap,
   });
 
   final String title;
@@ -350,69 +364,77 @@ class _ReportActionCard extends StatelessWidget {
   final Color descriptionColor;
   final Color borderColor;
   final Gradient background;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-      decoration: BoxDecoration(
-        gradient: background,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: borderColor, width: 2),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: iconBackground,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(icon, color: Colors.white, size: 32),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          decoration: BoxDecoration(
+            gradient: background,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: borderColor, width: 2),
           ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: textTheme.headlineMedium?.copyWith(
-                      color: titleColor,
-                      fontSize: 18,
-                      height: 1.05,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: textTheme.titleLarge?.copyWith(
-                      color: descriptionColor,
-                      fontSize: 14,
-                      height: 1.35,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: iconBackground,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(icon, color: Colors.white, size: 32),
               ),
-            ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: textTheme.headlineMedium?.copyWith(
+                          color: titleColor,
+                          fontSize: 18,
+                          height: 1.05,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        description,
+                        style: textTheme.titleLarge?.copyWith(
+                          color: descriptionColor,
+                          fontSize: 14,
+                          height: 1.35,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: descriptionColor,
+                  size: 34,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 4),
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Icon(
-              Icons.chevron_right_rounded,
-              color: descriptionColor,
-              size: 34,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
