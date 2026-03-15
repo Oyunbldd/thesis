@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
+import 'lost_item_details_view.dart';
 
 class LostItemsView extends StatefulWidget {
   const LostItemsView({super.key});
@@ -20,36 +21,39 @@ class _LostItemsViewState extends State<LostItemsView> {
     'Documents',
   ];
 
-  static const List<_LostItemData> _sampleItems = <_LostItemData>[
-    _LostItemData(
+  static const List<LostItemData> _sampleItems = <LostItemData>[
+    LostItemData(
       title: 'Black Wireless Headphones',
       description:
           'Lost my Sony WH-1000XM4 headphones in the Student Center cafeteria area around lunch time.',
       location: 'Student Center',
       date: 'Feb 15, 2026',
       category: 'Electronics',
+      contactEmail: 'john.doe@student.edu',
       icon: Icons.headphones_rounded,
       accentColor: Color(0xFF111827),
       backgroundColor: Color(0xFF1F2937),
     ),
-    _LostItemData(
+    LostItemData(
       title: 'Blue Jansport Backpack',
       description:
           'Backpack with lecture notes and a laptop charger. Last seen near the library entrance after class.',
       location: 'Main Library',
       date: 'Feb 13, 2026',
       category: 'Bags',
+      contactEmail: 'emma.baker@student.edu',
       icon: Icons.backpack_rounded,
       accentColor: Color(0xFF1D4ED8),
       backgroundColor: Color(0xFFDBEAFE),
     ),
-    _LostItemData(
+    LostItemData(
       title: 'Dorm Room Key Set',
       description:
           'Silver keychain with two keys and a red student tag. I may have dropped it near the engineering block.',
       location: 'Engineering Building',
       date: 'Feb 11, 2026',
       category: 'Keys',
+      contactEmail: 'liam.cole@student.edu',
       icon: Icons.key_rounded,
       accentColor: Color(0xFFF59E0B),
       backgroundColor: Color(0xFFFEF3C7),
@@ -61,7 +65,7 @@ class _LostItemsViewState extends State<LostItemsView> {
   String _selectedCategory = _categories.first;
   String _searchQuery = '';
 
-  List<_LostItemData> get _filteredItems {
+  List<LostItemData> get _filteredItems {
     final query = _searchQuery.trim().toLowerCase();
 
     return _sampleItems.where((item) {
@@ -157,7 +161,30 @@ class _LostItemsViewState extends State<LostItemsView> {
                 ...filteredItems.map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 18),
-                    child: _LostItemCard(item: item),
+                    child: _LostItemCard(
+                      item: item,
+                      onTap: () {
+                        showModalBottomSheet<void>(
+                          context: context,
+                          isScrollControlled: true,
+                          enableDrag: true,
+                          useSafeArea: false,
+                          backgroundColor: Colors.transparent,
+                          barrierColor: Colors.black.withValues(alpha: 0.38),
+                          builder: (_) => DraggableScrollableSheet(
+                            expand: false,
+                            initialChildSize: 0.93,
+                            minChildSize: 0.60,
+                            maxChildSize: 0.97,
+                            builder: (context, scrollController) =>
+                                LostItemDetailsView(
+                                  item: item,
+                                  scrollController: scrollController,
+                                ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -326,88 +353,101 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _LostItemCard extends StatelessWidget {
-  const _LostItemCard({required this.item});
+  const _LostItemCard({required this.item, required this.onTap});
 
-  final _LostItemData item;
+  final LostItemData item;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.secondary.withValues(alpha: 0.10),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-            child: Container(
-              height: 235,
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [item.backgroundColor, item.accentColor],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.secondary.withValues(alpha: 0.10),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _CategoryBadge(label: item.category),
-                  const Spacer(),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Icon(
-                      item.icon,
-                      size: 132,
-                      color: Colors.white.withValues(alpha: 0.88),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+                child: Container(
+                  height: 235,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [item.backgroundColor, item.accentColor],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _CategoryBadge(label: item.category),
+                      const Spacer(),
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Icon(
+                          item.icon,
+                          size: 132,
+                          color: Colors.white.withValues(alpha: 0.88),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: textTheme.headlineMedium?.copyWith(
-                    fontSize: 24,
-                    color: AppTheme.secondary,
-                  ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: textTheme.headlineMedium?.copyWith(
+                        fontSize: 24,
+                        color: AppTheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      item.description,
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontSize: 16,
+                        height: 1.45,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _InfoRow(
+                      icon: Icons.location_on_outlined,
+                      text: item.location,
+                    ),
+                    const SizedBox(height: 12),
+                    _InfoRow(icon: Icons.access_time_outlined, text: item.date),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  item.description,
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontSize: 16,
-                    height: 1.45,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _InfoRow(icon: Icons.location_on_outlined, text: item.location),
-                const SizedBox(height: 12),
-                _InfoRow(icon: Icons.access_time_outlined, text: item.date),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -462,13 +502,14 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _LostItemData {
-  const _LostItemData({
+class LostItemData {
+  const LostItemData({
     required this.title,
     required this.description,
     required this.location,
     required this.date,
     required this.category,
+    required this.contactEmail,
     required this.icon,
     required this.accentColor,
     required this.backgroundColor,
@@ -479,6 +520,7 @@ class _LostItemData {
   final String location;
   final String date;
   final String category;
+  final String contactEmail;
   final IconData icon;
   final Color accentColor;
   final Color backgroundColor;
