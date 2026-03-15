@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:lost_found_app/utils/app_theme.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       height: 125,
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-        ),
+        gradient: AppTheme.primaryGradient,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
@@ -38,18 +39,16 @@ class HomeHeader extends StatelessWidget {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     "Lost & Found",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   Text(
                     "Campus Portal",
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.78),
+                    ),
                   ),
                 ],
               ),
