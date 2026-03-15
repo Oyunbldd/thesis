@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
+import 'report_found_item_view.dart';
 import 'report_lost_item_view.dart';
 
 const int reportLostTotal = 3;
@@ -81,6 +82,13 @@ class ReportViewBody extends StatelessWidget {
               ),
             );
           },
+          onFoundTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const ReportFoundItemView(),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 18),
         const _TipsCard(),
@@ -92,9 +100,10 @@ class ReportViewBody extends StatelessWidget {
 }
 
 class _ActionPanel extends StatelessWidget {
-  const _ActionPanel({required this.onLostTap});
+  const _ActionPanel({required this.onLostTap, required this.onFoundTap});
 
   final VoidCallback onLostTap;
+  final VoidCallback onFoundTap;
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +170,7 @@ class _ActionPanel extends StatelessWidget {
               onTap: onLostTap,
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(20, 16, 20, 20),
             child: _ReportActionCard(
               title: 'I Found Something',
@@ -177,7 +186,7 @@ class _ActionPanel extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              onTap: null,
+              onTap: onFoundTap,
             ),
           ),
         ],
