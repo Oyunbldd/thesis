@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lost_found_app/utils/app_theme.dart';
 import 'package:lost_found_app/views/found/found_items_view.dart';
 import 'package:lost_found_app/views/lost/lost_items_view.dart';
+import 'package:lost_found_app/views/report/create_report_view.dart';
 import 'package:lost_found_app/widgets/bottom_nav_bar.dart';
 import 'package:lost_found_app/widgets/home_header.dart';
 
@@ -84,9 +85,11 @@ class _HomeViewState extends State<HomeView> {
               physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (index) {
                 setState(() {
-                  _currentItem = index == 1
-                      ? BottomNavItem.found
-                      : BottomNavItem.lost;
+                  _currentItem = switch (index) {
+                    0 => BottomNavItem.lost,
+                    1 => BottomNavItem.report,
+                    _ => BottomNavItem.found,
+                  };
                 });
               },
               children: [
@@ -106,6 +109,9 @@ class _HomeViewState extends State<HomeView> {
                       _lostSelectedCategory = category;
                     });
                   },
+                ),
+                const ReportViewBody(
+                  key: PageStorageKey<String>('report-view-body'),
                 ),
                 FoundItemsBody(
                   key: const PageStorageKey<String>('found-items-body'),
@@ -132,10 +138,11 @@ class _HomeViewState extends State<HomeView> {
       bottomNavigationBar: BottomNavBar(
         currentItem: _currentItem,
         onItemSelected: (item) {
-          if (item == BottomNavItem.report) {
-            return;
-          }
-          final targetPage = item == BottomNavItem.found ? 1 : 0;
+          final targetPage = switch (item) {
+            BottomNavItem.lost => 0,
+            BottomNavItem.report => 1,
+            BottomNavItem.found => 2,
+          };
           _pageController.animateToPage(
             targetPage,
             duration: const Duration(milliseconds: 220),
