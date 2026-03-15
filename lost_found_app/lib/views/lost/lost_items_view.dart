@@ -5,6 +5,53 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
 import 'lost_item_details_view.dart';
 
+const List<String> lostCategories = <String>[
+  'All',
+  'Electronics',
+  'Bags',
+  'Keys',
+  'Documents',
+];
+
+const List<LostItemData> lostSampleItems = <LostItemData>[
+  LostItemData(
+    title: 'Black Wireless Headphones',
+    description:
+        'Lost my Sony WH-1000XM4 headphones in the Student Center cafeteria area around lunch time.',
+    location: 'Student Center',
+    date: 'Feb 15, 2026',
+    category: 'Electronics',
+    contactEmail: 'john.doe@student.edu',
+    icon: Icons.headphones_rounded,
+    accentColor: Color(0xFF111827),
+    backgroundColor: Color(0xFF1F2937),
+  ),
+  LostItemData(
+    title: 'Blue Jansport Backpack',
+    description:
+        'Backpack with lecture notes and a laptop charger. Last seen near the library entrance after class.',
+    location: 'Main Library',
+    date: 'Feb 13, 2026',
+    category: 'Bags',
+    contactEmail: 'emma.baker@student.edu',
+    icon: Icons.backpack_rounded,
+    accentColor: Color(0xFF1D4ED8),
+    backgroundColor: Color(0xFFDBEAFE),
+  ),
+  LostItemData(
+    title: 'Dorm Room Key Set',
+    description:
+        'Silver keychain with two keys and a red student tag. I may have dropped it near the engineering block.',
+    location: 'Engineering Building',
+    date: 'Feb 11, 2026',
+    category: 'Keys',
+    contactEmail: 'liam.cole@student.edu',
+    icon: Icons.key_rounded,
+    accentColor: Color(0xFFF59E0B),
+    backgroundColor: Color(0xFFFEF3C7),
+  ),
+];
+
 class LostItemsView extends StatefulWidget {
   const LostItemsView({super.key});
 
@@ -13,62 +60,15 @@ class LostItemsView extends StatefulWidget {
 }
 
 class _LostItemsViewState extends State<LostItemsView> {
-  static const List<String> _categories = <String>[
-    'All',
-    'Electronics',
-    'Bags',
-    'Keys',
-    'Documents',
-  ];
-
-  static const List<LostItemData> _sampleItems = <LostItemData>[
-    LostItemData(
-      title: 'Black Wireless Headphones',
-      description:
-          'Lost my Sony WH-1000XM4 headphones in the Student Center cafeteria area around lunch time.',
-      location: 'Student Center',
-      date: 'Feb 15, 2026',
-      category: 'Electronics',
-      contactEmail: 'john.doe@student.edu',
-      icon: Icons.headphones_rounded,
-      accentColor: Color(0xFF111827),
-      backgroundColor: Color(0xFF1F2937),
-    ),
-    LostItemData(
-      title: 'Blue Jansport Backpack',
-      description:
-          'Backpack with lecture notes and a laptop charger. Last seen near the library entrance after class.',
-      location: 'Main Library',
-      date: 'Feb 13, 2026',
-      category: 'Bags',
-      contactEmail: 'emma.baker@student.edu',
-      icon: Icons.backpack_rounded,
-      accentColor: Color(0xFF1D4ED8),
-      backgroundColor: Color(0xFFDBEAFE),
-    ),
-    LostItemData(
-      title: 'Dorm Room Key Set',
-      description:
-          'Silver keychain with two keys and a red student tag. I may have dropped it near the engineering block.',
-      location: 'Engineering Building',
-      date: 'Feb 11, 2026',
-      category: 'Keys',
-      contactEmail: 'liam.cole@student.edu',
-      icon: Icons.key_rounded,
-      accentColor: Color(0xFFF59E0B),
-      backgroundColor: Color(0xFFFEF3C7),
-    ),
-  ];
-
   final TextEditingController _searchController = TextEditingController();
 
-  String _selectedCategory = _categories.first;
+  String _selectedCategory = lostCategories.first;
   String _searchQuery = '';
 
   List<LostItemData> get _filteredItems {
     final query = _searchQuery.trim().toLowerCase();
 
-    return _sampleItems.where((item) {
+    return lostSampleItems.where((item) {
       final matchesCategory =
           _selectedCategory == 'All' || item.category == _selectedCategory;
       final matchesQuery =
@@ -90,109 +90,134 @@ class _LostItemsViewState extends State<LostItemsView> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final filteredItems = _filteredItems;
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
           const HomeHeader(),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
-              children: [
-                _SearchBar(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.filter_alt_outlined,
-                      color: AppTheme.textPrimary.withValues(alpha: 0.82),
-                      size: 26,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Filter by Category',
-                      style: textTheme.titleLarge?.copyWith(
-                        fontSize: 18,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  height: 42,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 10),
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = category == _selectedCategory;
-
-                      return _CategoryChip(
-                        label: category,
-                        isSelected: isSelected,
-                        onTap: () {
-                          setState(() {
-                            _selectedCategory = category;
-                          });
-                        },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 22),
-                if (filteredItems.isEmpty)
-                  _EmptyState(
-                    selectedCategory: _selectedCategory,
-                    searchQuery: _searchQuery,
-                  ),
-                ...filteredItems.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 18),
-                    child: _LostItemCard(
-                      item: item,
-                      onTap: () {
-                        showModalBottomSheet<void>(
-                          context: context,
-                          isScrollControlled: true,
-                          enableDrag: true,
-                          useSafeArea: false,
-                          backgroundColor: Colors.transparent,
-                          barrierColor: Colors.black.withValues(alpha: 0.38),
-                          builder: (_) => DraggableScrollableSheet(
-                            expand: false,
-                            initialChildSize: 0.93,
-                            minChildSize: 0.60,
-                            maxChildSize: 0.97,
-                            builder: (context, scrollController) =>
-                                LostItemDetailsView(
-                                  item: item,
-                                  scrollController: scrollController,
-                                ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+            child: LostItemsBody(
+              searchController: _searchController,
+              searchQuery: _searchQuery,
+              selectedCategory: _selectedCategory,
+              filteredItems: _filteredItems,
+              onSearchChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              onCategorySelected: (category) {
+                setState(() {
+                  _selectedCategory = category;
+                });
+              },
             ),
           ),
         ],
       ),
       bottomNavigationBar: const BottomNavBar(currentItem: BottomNavItem.lost),
+    );
+  }
+}
+
+class LostItemsBody extends StatelessWidget {
+  const LostItemsBody({
+    super.key,
+    required this.searchController,
+    required this.searchQuery,
+    required this.selectedCategory,
+    required this.filteredItems,
+    required this.onSearchChanged,
+    required this.onCategorySelected,
+  });
+
+  final TextEditingController searchController;
+  final String searchQuery;
+  final String selectedCategory;
+  final List<LostItemData> filteredItems;
+  final ValueChanged<String> onSearchChanged;
+  final ValueChanged<String> onCategorySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+      children: [
+        _SearchBar(controller: searchController, onChanged: onSearchChanged),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Icon(
+              Icons.filter_alt_outlined,
+              color: AppTheme.textPrimary.withValues(alpha: 0.82),
+              size: 26,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Filter by Category',
+              style: textTheme.titleLarge?.copyWith(
+                fontSize: 18,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 42,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: lostCategories.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final category = lostCategories[index];
+              final isSelected = category == selectedCategory;
+
+              return _CategoryChip(
+                label: category,
+                isSelected: isSelected,
+                onTap: () => onCategorySelected(category),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 22),
+        if (filteredItems.isEmpty)
+          _EmptyState(
+            selectedCategory: selectedCategory,
+            searchQuery: searchQuery,
+          ),
+        ...filteredItems.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 18),
+            child: _LostItemCard(
+              item: item,
+              onTap: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  enableDrag: true,
+                  useSafeArea: false,
+                  backgroundColor: Colors.transparent,
+                  barrierColor: Colors.black.withValues(alpha: 0.38),
+                  builder: (_) => DraggableScrollableSheet(
+                    expand: false,
+                    initialChildSize: 0.93,
+                    minChildSize: 0.60,
+                    maxChildSize: 0.97,
+                    builder: (context, scrollController) => LostItemDetailsView(
+                      item: item,
+                      scrollController: scrollController,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

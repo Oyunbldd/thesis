@@ -39,6 +39,7 @@ class BottomNavBar extends StatelessWidget {
                   label: 'Lost',
                   icon: Icons.search_rounded,
                   isSelected: currentItem == BottomNavItem.lost,
+                  selectedColor: const Color(0xFFDC2626),
                   onTap: () => onItemSelected?.call(BottomNavItem.lost),
                 ),
               ),
@@ -53,6 +54,7 @@ class BottomNavBar extends StatelessWidget {
                   label: 'Found',
                   icon: Icons.inventory_2_rounded,
                   isSelected: currentItem == BottomNavItem.found,
+                  selectedColor: const Color(0xFF16A34A),
                   onTap: () => onItemSelected?.call(BottomNavItem.found),
                 ),
               ),
@@ -69,20 +71,20 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.isSelected,
+    required this.selectedColor,
     required this.onTap,
   });
 
   final String label;
   final IconData icon;
   final bool isSelected;
+  final Color selectedColor;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final Color textColor = isSelected
-        ? AppTheme.primary
-        : AppTheme.textSecondary;
+    final Color textColor = isSelected ? selectedColor : AppTheme.textSecondary;
 
     return InkWell(
       borderRadius: BorderRadius.circular(22),
@@ -92,7 +94,9 @@ class _NavItem extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEFF6FF) : Colors.transparent,
+          color: isSelected
+              ? selectedColor.withValues(alpha: 0.12)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(22),
         ),
         child: Column(
