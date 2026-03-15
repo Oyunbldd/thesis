@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library so you can attach an item photo to your lost report.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We may save selected report photos from your library when you create a lost item report.</string>
 </dict>
 </plist>
