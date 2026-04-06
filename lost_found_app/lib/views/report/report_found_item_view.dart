@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../controllers/item_controller.dart';
+import '../../models/item_report_model.dart';
 import '../../utils/app_theme.dart';
 
 class ReportFoundItemView extends StatefulWidget {
@@ -36,7 +39,10 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     'Other',
   ];
 
+  final ItemController _itemController = ItemController();
+
   int _step = 0;
+  bool _isSubmitting = false;
   String? _selectedImagePath;
   String? _photoPermissionMessage;
   String? _selectedCategory;
@@ -83,13 +89,30 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     });
   }
 
-  void _goNext() {
-    if (!_canContinue) {
-      return;
-    }
+  Future<void> _goNext() async {
+    if (!_canContinue || _isSubmitting) return;
 
     if (_step == 3) {
-      Navigator.of(context).pop();
+      setState(() => _isSubmitting = true);
+      try {
+        final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+        final report = ItemReportModel(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          title: _quickDescriptionController.text.trim(),
+          description: _notesController.text.trim(),
+          category: _selectedCategory!,
+          type: 'found',
+          status: 'open',
+          imageUrl: _selectedImagePath ?? '',
+          location: _selectedLocation!,
+          date: _dateFound!,
+          userId: uid,
+        );
+        await _itemController.createReport(report);
+        if (mounted) Navigator.of(context).pop();
+      } finally {
+        if (mounted) setState(() => _isSubmitting = false);
+      }
       return;
     }
 

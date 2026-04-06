@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
-import '../../utils/app_routes.dart';
 import '../../utils/app_theme.dart';
 
 class LoginView extends StatefulWidget {
@@ -18,23 +18,43 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _passwordController = TextEditingController();
 
   String _errorMessage = '';
+  bool _isLoading = false;
 
-  void _handleLogin() {
-    final isSuccess = _authController.login(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
+  Future<void> _handleLogin() async {
+    setState(() {
+      _errorMessage = '';
+      _isLoading = true;
+    });
 
-    if (isSuccess) {
+    try {
+      await _authController.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      // Navigation is handled by the StreamBuilder in app.dart.
+    } on FirebaseAuthException catch (e) {
       setState(() {
-        _errorMessage = '';
+        switch (e.code) {
+          case 'user-not-found':
+          case 'wrong-password':
+          case 'invalid-credential':
+            _errorMessage = 'Invalid email or password.';
+          case 'user-disabled':
+            _errorMessage = 'This account has been disabled.';
+          case 'too-many-requests':
+            _errorMessage = 'Too many attempts. Please try again later.';
+          default:
+            _errorMessage = 'Login failed. Please try again.';
+        }
       });
-
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
-    } else {
+    } on Exception catch (e) {
       setState(() {
-        _errorMessage = 'Please enter a valid ELTE email and password.';
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -99,8 +119,14 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     if (_errorMessage.isNotEmpty) const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: _handleLogin,
-                      child: const Text('Login'),
+                      onPressed: _isLoading ? null : _handleLogin,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Login'),
                     ),
                   ],
                 ),
