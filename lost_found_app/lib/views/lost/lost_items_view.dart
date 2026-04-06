@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
-import 'lost_item_details_view.dart';
+import '../../widgets/item_widgets.dart';
 
 const List<String> lostCategories = <String>[
   'All',
@@ -13,8 +13,9 @@ const List<String> lostCategories = <String>[
   'Documents',
 ];
 
-const List<LostItemData> lostSampleItems = <LostItemData>[
-  LostItemData(
+const List<ItemData> lostSampleItems = <ItemData>[
+  ItemData(
+    isLost: true,
     title: 'Black Wireless Headphones',
     description:
         'Lost my Sony WH-1000XM4 headphones in the Student Center cafeteria area around lunch time.',
@@ -26,7 +27,8 @@ const List<LostItemData> lostSampleItems = <LostItemData>[
     accentColor: Color(0xFF111827),
     backgroundColor: Color(0xFF1F2937),
   ),
-  LostItemData(
+  ItemData(
+    isLost: true,
     title: 'Blue Jansport Backpack',
     description:
         'Backpack with lecture notes and a laptop charger. Last seen near the library entrance after class.',
@@ -38,7 +40,8 @@ const List<LostItemData> lostSampleItems = <LostItemData>[
     accentColor: Color(0xFF1D4ED8),
     backgroundColor: Color(0xFFDBEAFE),
   ),
-  LostItemData(
+  ItemData(
+    isLost: true,
     title: 'Dorm Room Key Set',
     description:
         'Silver keychain with two keys and a red student tag. I may have dropped it near the engineering block.',
@@ -65,7 +68,7 @@ class _LostItemsViewState extends State<LostItemsView> {
   String _selectedCategory = lostCategories.first;
   String _searchQuery = '';
 
-  List<LostItemData> get _filteredItems {
+  List<ItemData> get _filteredItems {
     final query = _searchQuery.trim().toLowerCase();
 
     return lostSampleItems.where((item) {
@@ -102,14 +105,10 @@ class _LostItemsViewState extends State<LostItemsView> {
               selectedCategory: _selectedCategory,
               filteredItems: _filteredItems,
               onSearchChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
+                setState(() => _searchQuery = value);
               },
               onCategorySelected: (category) {
-                setState(() {
-                  _selectedCategory = category;
-                });
+                setState(() => _selectedCategory = category);
               },
             ),
           ),
@@ -134,7 +133,7 @@ class LostItemsBody extends StatelessWidget {
   final TextEditingController searchController;
   final String searchQuery;
   final String selectedCategory;
-  final List<LostItemData> filteredItems;
+  final List<ItemData> filteredItems;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
 
@@ -145,7 +144,7 @@ class LostItemsBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
       children: [
-        _SearchBar(controller: searchController, onChanged: onSearchChanged),
+        ItemSearchBar(controller: searchController, onChanged: onSearchChanged),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -170,14 +169,12 @@ class LostItemsBody extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: lostCategories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final category = lostCategories[index];
-              final isSelected = category == selectedCategory;
-
-              return _CategoryChip(
+              return ItemCategoryChip(
                 label: category,
-                isSelected: isSelected,
+                isSelected: category == selectedCategory,
                 onTap: () => onCategorySelected(category),
               );
             },
@@ -185,14 +182,14 @@ class LostItemsBody extends StatelessWidget {
         ),
         const SizedBox(height: 22),
         if (filteredItems.isEmpty)
-          _EmptyState(
+          ItemEmptyState(
             selectedCategory: selectedCategory,
             searchQuery: searchQuery,
           ),
         ...filteredItems.map(
           (item) => Padding(
             padding: const EdgeInsets.only(bottom: 18),
-            child: _LostItemCard(
+            child: ItemCard(
               item: item,
               onTap: () {
                 showModalBottomSheet<void>(
@@ -207,7 +204,7 @@ class LostItemsBody extends StatelessWidget {
                     initialChildSize: 0.93,
                     minChildSize: 0.60,
                     maxChildSize: 0.97,
-                    builder: (context, scrollController) => LostItemDetailsView(
+                    builder: (context, scrollController) => ItemDetailsView(
                       item: item,
                       scrollController: scrollController,
                     ),
@@ -220,333 +217,4 @@ class LostItemsBody extends StatelessWidget {
       ],
     );
   }
-}
-
-class _SearchBar extends StatelessWidget {
-  const _SearchBar({required this.controller, required this.onChanged});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppTheme.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.secondary.withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontSize: 19,
-          color: AppTheme.textPrimary,
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Search items...',
-          hintStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontSize: 19,
-            color: AppTheme.textSecondary.withValues(alpha: 0.75),
-            fontWeight: FontWeight.w500,
-          ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            size: 34,
-            color: AppTheme.textSecondary.withValues(alpha: 0.7),
-          ),
-          suffixIcon: controller.text.isNotEmpty
-              ? IconButton(
-                  onPressed: () {
-                    controller.clear();
-                    onChanged('');
-                  },
-                  icon: const Icon(Icons.close_rounded),
-                  color: AppTheme.textSecondary,
-                )
-              : null,
-          filled: false,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 20,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE8F0FF) : AppTheme.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFC7D8FF) : AppTheme.border,
-          ),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isSelected ? AppTheme.primary : AppTheme.textSecondary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({
-    required this.selectedCategory,
-    required this.searchQuery,
-  });
-
-  final String selectedCategory;
-  final String searchQuery;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final filterText = selectedCategory == 'All'
-        ? 'all categories'
-        : selectedCategory;
-    final queryText = searchQuery.trim().isEmpty
-        ? 'without a search term'
-        : 'for "${searchQuery.trim()}"';
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.search_off_rounded,
-            size: 40,
-            color: AppTheme.textSecondary,
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'No matching items',
-            style: textTheme.titleLarge?.copyWith(
-              fontSize: 19,
-              color: AppTheme.secondary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Try a different search or category. Right now we found nothing in $filterText $queryText.',
-            style: textTheme.bodyMedium?.copyWith(height: 1.5),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LostItemCard extends StatelessWidget {
-  const _LostItemCard({required this.item, required this.onTap});
-
-  final LostItemData item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(30),
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppTheme.surface,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.secondary.withValues(alpha: 0.10),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(30),
-                ),
-                child: Container(
-                  height: 235,
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [item.backgroundColor, item.accentColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      _CategoryBadge(label: item.category),
-                      const Spacer(),
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Icon(
-                          item.icon,
-                          size: 132,
-                          color: Colors.white.withValues(alpha: 0.88),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.title,
-                      style: textTheme.headlineMedium?.copyWith(
-                        fontSize: 24,
-                        color: AppTheme.secondary,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      item.description,
-                      style: textTheme.bodyLarge?.copyWith(
-                        fontSize: 16,
-                        height: 1.45,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    _InfoRow(
-                      icon: Icons.location_on_outlined,
-                      text: item.location,
-                    ),
-                    const SizedBox(height: 12),
-                    _InfoRow(icon: Icons.access_time_outlined, text: item.date),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryBadge extends StatelessWidget {
-  const _CategoryBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE5EEFF),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: AppTheme.primary,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppTheme.primary, size: 28),
-        const SizedBox(width: 12),
-        Text(
-          text,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 17,
-            color: AppTheme.textSecondary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class LostItemData {
-  const LostItemData({
-    required this.title,
-    required this.description,
-    required this.location,
-    required this.date,
-    required this.category,
-    required this.contactEmail,
-    required this.icon,
-    required this.accentColor,
-    required this.backgroundColor,
-  });
-
-  final String title;
-  final String description;
-  final String location;
-  final String date;
-  final String category;
-  final String contactEmail;
-  final IconData icon;
-  final Color accentColor;
-  final Color backgroundColor;
 }
