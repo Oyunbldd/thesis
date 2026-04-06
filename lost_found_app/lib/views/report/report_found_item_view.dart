@@ -175,10 +175,21 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     }
   }
 
+  static const _stepTitles = [
+    'Add a Photo',
+    'What Type of Item?',
+    'Where Did You Find It?',
+    'Contact Details',
+  ];
+
+  static const _stepNextLabels = [
+    'Item Category',
+    'Location & Date',
+    'Contact Info',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final progress = (_step + 1) / 4;
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: Column(
@@ -203,7 +214,12 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _FoundProgressHeader(step: _step + 1, progress: progress),
+                    _FoundProgressHeader(
+                      step: _step + 1,
+                      totalSteps: 4,
+                      title: _stepTitles[_step],
+                      nextLabel: _step < 3 ? _stepNextLabels[_step] : null,
+                    ),
                     const SizedBox(height: 26),
                     ...switch (_step) {
                       0 => [
@@ -338,52 +354,97 @@ class _FoundHeader extends StatelessWidget {
 }
 
 class _FoundProgressHeader extends StatelessWidget {
-  const _FoundProgressHeader({required this.step, required this.progress});
+  const _FoundProgressHeader({
+    required this.step,
+    required this.totalSteps,
+    required this.title,
+    this.nextLabel,
+  });
 
   final int step;
-  final double progress;
+  final int totalSteps;
+  final String title;
+  final String? nextLabel;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final percent = (progress * 100).round();
+    final progress = step / totalSteps;
 
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            Text(
-              'Step $step of 4',
-              style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF3F4A5E),
-                fontSize: 18,
+        SizedBox(
+          width: 72,
+          height: 72,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CircularProgressIndicator(
+                value: progress,
+                strokeWidth: 6,
+                backgroundColor: const Color(0xFFD9DDE5),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFF3FA247),
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              '$percent% Complete',
-              style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF697386),
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$step',
+                      style: textTheme.titleLarge?.copyWith(
+                        color: const Color(0xFF111318),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                    ),
+                    Text(
+                      'of $totalSteps',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF697386),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 12,
-            backgroundColor: const Color(0xFFD9DDE5),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF48BD57)),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: textTheme.headlineMedium?.copyWith(
+                  color: const Color(0xFF111318),
+                  fontSize: 20,
+                  height: 1.15,
+                ),
+              ),
+              if (nextLabel != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Next: $nextLabel',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF697386),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
     );
   }
 }
+
 
 class _FoundStepHeader extends StatelessWidget {
   const _FoundStepHeader({

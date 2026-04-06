@@ -193,10 +193,24 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
     });
   }
 
+  static const _stepTitles = [
+    'What Did You Lose?',
+    'Where & When?',
+    'Describe the Item',
+    'Add a Photo',
+    'Contact Details',
+  ];
+
+  static const _stepNextLabels = [
+    'Location & Date',
+    'Description',
+    'Add Photo',
+    'Contact Info',
+    'Submit',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final progress = (_step + 1) / 5;
-
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: Column(
@@ -221,7 +235,12 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _ProgressHeader(step: _step + 1, progress: progress),
+                    _ProgressHeader(
+                      step: _step + 1,
+                      totalSteps: 5,
+                      title: _stepTitles[_step],
+                      nextLabel: _step < 4 ? _stepNextLabels[_step] : null,
+                    ),
                     const SizedBox(height: 26),
                     ...switch (_step) {
                       0 => [
@@ -232,7 +251,7 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
                           onTemplateSelected: (value) {
                             setState(() {
                               if (value.isManual) {
-                                _selectedTemplate = null;
+                                _selectedTemplate = 'Other';
                                 _itemNameController.clear();
                                 _selectedCategory = null;
                               } else {
@@ -374,46 +393,92 @@ class _LostReportHeader extends StatelessWidget {
 }
 
 class _ProgressHeader extends StatelessWidget {
-  const _ProgressHeader({required this.step, required this.progress});
+  const _ProgressHeader({
+    required this.step,
+    required this.totalSteps,
+    required this.title,
+    this.nextLabel,
+  });
 
   final int step;
-  final double progress;
+  final int totalSteps;
+  final String title;
+  final String? nextLabel;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final percent = (progress * 100).round();
+    final progress = step / totalSteps;
 
-    return Column(
+    return Row(
       children: [
-        Row(
-          children: [
-            Text(
-              'Step $step of 5',
-              style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF3F4A5E),
-                fontSize: 18,
+        // ── Circular progress indicator ──────────────────────────────
+        SizedBox(
+          width: 72,
+          height: 72,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CircularProgressIndicator(
+                value: progress,
+                strokeWidth: 6,
+                backgroundColor: const Color(0xFFD9DDE5),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFFFF1A24),
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              '$percent% Complete',
-              style: textTheme.titleLarge?.copyWith(
-                color: const Color(0xFF697386),
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$step',
+                      style: textTheme.titleLarge?.copyWith(
+                        color: const Color(0xFF111318),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                    ),
+                    Text(
+                      'of $totalSteps',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF697386),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 12,
-            backgroundColor: const Color(0xFFD9DDE5),
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF1A24)),
+        const SizedBox(width: 18),
+        // ── Step title + next label ──────────────────────────────────
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: textTheme.headlineMedium?.copyWith(
+                  color: const Color(0xFF111318),
+                  fontSize: 20,
+                  height: 1.15,
+                ),
+              ),
+              if (nextLabel != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'Next: $nextLabel',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF697386),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
@@ -489,10 +554,14 @@ class _StepOne extends StatelessWidget {
           title: 'What item is it?',
           subtitle: 'Choose a template or enter custom details',
         ),
-        const SizedBox(height: 28),
-        Wrap(
-          spacing: 14,
-          runSpacing: 14,
+        const SizedBox(height: 20),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1.1,
           children: _ReportLostItemViewState._itemTemplates
               .map(
                 (item) => _TemplateTile(
@@ -504,7 +573,7 @@ class _StepOne extends StatelessWidget {
               .toList(),
         ),
         const SizedBox(height: 24),
-        if (selectedTemplate == null) ...[
+        if (selectedTemplate == null || selectedTemplate == 'Other') ...[
           Row(
             children: const [
               Expanded(child: Divider(color: Color(0xFFD5DAE2))),
@@ -827,38 +896,35 @@ class _TemplateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 104,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(26),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 10),
-          decoration: BoxDecoration(
-            color: selected ? const Color(0xFFFFF0F1) : const Color(0xFFF7F8FB),
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: selected
-                  ? const Color(0xFFFFC7CC)
-                  : const Color(0xFFDCE1EA),
-              width: 2,
-            ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFE50008) : const Color(0xFFF7F8FB),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? const Color(0xFFE50008) : const Color(0xFFDCE1EA),
+            width: 2,
           ),
-          child: Column(
-            children: [
-              Text(data.emoji, style: const TextStyle(fontSize: 38)),
-              const SizedBox(height: 12),
-              Text(
-                data.label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFF3E4A5D),
-                  fontSize: 16,
-                ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(data.emoji, style: const TextStyle(fontSize: 26)),
+            const SizedBox(height: 6),
+            Text(
+              data.label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: selected ? Colors.white : const Color(0xFF3E4A5D),
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
