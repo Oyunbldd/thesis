@@ -6,6 +6,6 @@ class Validators {
 
   static bool isElteStudentEmail(String value) {
     final v = value.trim().toLowerCase();
-    return v.endsWith("@student.elte.hu");
+    return v.endsWith("@inf.elte.hu");
   }
 }

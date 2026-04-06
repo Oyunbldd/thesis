@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/colors.dart';
 
 class TopHeader extends StatelessWidget {
   final String initials;
@@ -25,7 +26,7 @@ class TopHeader extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF1E4DFF), Color(0xFF0B2FBF)],
+            colors: [AppColors.headerGradientStart, AppColors.headerGradientEnd],
           ),
         ),
         child: SafeArea(
@@ -65,7 +66,7 @@ class TopHeader extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -99,8 +100,8 @@ class _Avatar extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.95), width: 2),
-        color: Colors.white.withOpacity(0.10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.95), width: 2),
+        color: Colors.white.withValues(alpha: 0.10),
       ),
       child: Text(
         initials,

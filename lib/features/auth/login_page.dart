@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app/router.dart';
+import '../../core/utils/validators.dart';
+import '../../core/theme/colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,11 +26,6 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  bool _isElteStudentEmail(String v) {
-    final value = v.trim().toLowerCase();
-    return value.endsWith("@inf.elte.hu");
-  }
-
   Future<void> _onLogin() async {
     final valid = _formKey.currentState?.validate() ?? false;
     if (!valid) return;
@@ -50,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff3f4f6),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(18),
@@ -64,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 18,
                     offset: const Offset(0, 10),
                   ),
@@ -80,14 +77,14 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xff111827),
+                        color: AppColors.textDark,
                       ),
                     ),
                     const SizedBox(height: 6),
                     const Text(
                       "Use your ELTE student email.",
                       style: TextStyle(
-                        color: Color(0xff6b7280),
+                        color: AppColors.textMuted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -109,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                         final value = (v ?? "").trim();
                         if (value.isEmpty) return "Email is required";
                         if (!value.contains('@')) return "Enter a valid email";
-                        if (!_isElteStudentEmail(value)) {
+                        if (!Validators.isElteStudentEmail(value)) {
                           return "Use @inf.elte.hu";
                         }
                         return null;

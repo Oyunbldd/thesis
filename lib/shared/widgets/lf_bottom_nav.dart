@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/colors.dart';
 
 enum LfTab { lost, found, report }
 
@@ -29,7 +30,7 @@ class LfBottomNav extends StatelessWidget {
                 label: "Lost",
                 icon: Icons.error_outline,
                 active: activeTab == LfTab.lost,
-                activeColor: const Color(0xFFE11D48),
+                activeColor: AppColors.lostRed,
                 onTap: () => onTabSelected(LfTab.lost),
               ),
               const SizedBox(width: 96),
@@ -121,7 +122,7 @@ class _CenterActionButton extends StatelessWidget {
     return Material(
       elevation: 1,
       shape: const CircleBorder(),
-      shadowColor: Colors.black.withOpacity(0.22),
+      shadowColor: Colors.black.withValues(alpha: 0.22),
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),

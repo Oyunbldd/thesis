@@ -6,7 +6,7 @@ import '../features/auth/login_page.dart';
 class AppRouter {
   static const splash = "/";
   static const shell = "/app";
-  static const login = "login";
+  static const login = "/login";
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {

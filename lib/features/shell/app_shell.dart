@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/colors.dart';
 
 import '../../shared/widgets/top_header.dart';
 import '../../shared/widgets/lf_bottom_nav.dart';
@@ -26,7 +27,7 @@ class _AppShellState extends State<AppShell> {
     };
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: AppColors.background,
       body: Column(
         children: [
           const TopHeader(

@@ -29,6 +29,15 @@ class _ReportPageState extends State<ReportPage> {
   String? location;
 
   @override
+  void dispose() {
+    itemCtrl.dispose();
+    descCtrl.dispose();
+    dateCtrl.dispose();
+    contactCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 130),
