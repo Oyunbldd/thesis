@@ -1,12 +1,26 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lost_found_app/utils/app_theme.dart';
+import 'package:lost_found_app/views/profile_view.dart/profile_view.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
 
+  String _initials(String? email) {
+    if (email == null || email.isEmpty) return '?';
+    final name = email.split('@').first;
+    final parts = name.split('.');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final email = FirebaseAuth.instance.currentUser?.email;
+    final initials = _initials(email);
 
     return Container(
       height: 125,
@@ -24,14 +38,21 @@ class HomeHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              const CircleAvatar(
-                radius: 26,
-                backgroundColor: Colors.white24,
-                child: Text(
-                  "JS",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ProfileView(),
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 26,
+                  backgroundColor: Colors.white24,
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
