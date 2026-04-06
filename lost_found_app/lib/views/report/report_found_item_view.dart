@@ -110,6 +110,12 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
         );
         await _itemController.createReport(report);
         if (mounted) Navigator.of(context).pop();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to submit report: $e')),
+          );
+        }
       } finally {
         if (mounted) setState(() => _isSubmitting = false);
       }
