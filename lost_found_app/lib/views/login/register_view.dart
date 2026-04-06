@@ -3,49 +3,55 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_theme.dart';
-import 'register_view.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({super.key});
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
 
   @override
-  State<LoginView> createState() => _LoginViewState();
+  State<RegisterView> createState() => _RegisterViewState();
 }
 
-class _LoginViewState extends State<LoginView> {
+class _RegisterViewState extends State<RegisterView> {
   final AuthController _authController = AuthController();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   String _errorMessage = '';
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleRegister() async {
     setState(() {
       _errorMessage = '';
       _isLoading = true;
     });
 
     try {
-      await _authController.login(
+      await _authController.register(
         email: _emailController.text,
         password: _passwordController.text,
+        confirmPassword: _confirmPasswordController.text,
       );
-      // Navigation is handled by the StreamBuilder in app.dart.
+      // Pop back to root so the StreamBuilder in app.dart can show HomeView.
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         switch (e.code) {
-          case 'user-not-found':
-          case 'wrong-password':
-          case 'invalid-credential':
-            _errorMessage = 'Invalid email or password.';
-          case 'user-disabled':
-            _errorMessage = 'This account has been disabled.';
-          case 'too-many-requests':
-            _errorMessage = 'Too many attempts. Please try again later.';
+          case 'email-already-in-use':
+            _errorMessage =
+                'An account with this email already exists. Please log in.';
+          case 'weak-password':
+            _errorMessage = 'Password is too weak. Use at least 6 characters.';
+          case 'invalid-email':
+            _errorMessage = 'The email address is not valid.';
           default:
-            _errorMessage = 'Login failed. Please try again.';
+            _errorMessage = 'Registration failed. Please try again.';
         }
       });
     } on Exception catch (e) {
@@ -53,9 +59,7 @@ class _LoginViewState extends State<LoginView> {
         _errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -63,6 +67,7 @@ class _LoginViewState extends State<LoginView> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -71,7 +76,7 @@ class _LoginViewState extends State<LoginView> {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text('Create Account')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -85,13 +90,13 @@ class _LoginViewState extends State<LoginView> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Welcome back',
+                      'Create account',
                       style: textTheme.headlineMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Use your university account to enter the campus lost and found portal.',
+                      'Register with your @inf.elte.hu university email to access the campus lost and found portal.',
                       style: textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -101,13 +106,43 @@ class _LoginViewState extends State<LoginView> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
                         labelText: 'University Email',
+                        hintText: 'yourname@inf.elte.hu',
                       ),
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        hintText: 'At least 6 characters',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _confirmPasswordController,
+                      obscureText: _obscureConfirm,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirm
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     if (_errorMessage.isNotEmpty)
@@ -120,23 +155,20 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     if (_errorMessage.isNotEmpty) const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
+                      onPressed: _isLoading ? null : _handleRegister,
                       child: _isLoading
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Login'),
+                          : const Text('Create Account'),
                     ),
                     const SizedBox(height: 12),
                     TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const RegisterView(),
-                        ),
-                      ),
-                      child: const Text("Don't have an account? Register"),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Already have an account? Log in'),
                     ),
                   ],
                 ),
