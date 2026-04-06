@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/item_controller.dart';
+import '../../models/item_report_model.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
@@ -11,49 +13,58 @@ const List<String> foundCategories = <String>[
   'Accessories',
   'Bottles',
   'Documents',
+  'IDs',
+  'Keys',
+  'Books',
+  'Other',
 ];
 
-const List<ItemData> foundSampleItems = <ItemData>[
-  ItemData(
+const _categoryColors = <String, (Color, Color)>{
+  'Electronics': (Color(0xFF99F6E4), Color(0xFF0F766E)),
+  'Accessories': (Color(0xFFEDE9FE), Color(0xFF7C3AED)),
+  'Bottles': (Color(0xFFDCFCE7), Color(0xFF15803D)),
+  'Documents': (Color(0xFFFEF3C7), Color(0xFFF59E0B)),
+  'IDs': (Color(0xFFEDE9FE), Color(0xFF7C3AED)),
+  'Keys': (Color(0xFFFEF3C7), Color(0xFFF59E0B)),
+  'Books': (Color(0xFFFCE7F3), Color(0xFFDB2777)),
+  'Other': (Color(0xFFE0F2FE), Color(0xFF0284C7)),
+};
+
+const _categoryIcons = <String, IconData>{
+  'Electronics': Icons.devices_rounded,
+  'Accessories': Icons.watch_rounded,
+  'Bottles': Icons.local_drink_rounded,
+  'Documents': Icons.description_rounded,
+  'IDs': Icons.badge_rounded,
+  'Keys': Icons.key_rounded,
+  'Books': Icons.book_rounded,
+  'Other': Icons.category_rounded,
+};
+
+ItemData _toItemData(ItemReportModel model) {
+  final colors = _categoryColors[model.category] ??
+      (const Color(0xFFE2E8F0), const Color(0xFF64748B));
+  return ItemData(
     isLost: false,
-    title: 'White AirPods Case',
-    description:
-        'Found near the second floor study lounge. The case was closed and placed at the front desk for safekeeping.',
-    location: 'Main Library',
-    date: 'Feb 16, 2026',
-    category: 'Electronics',
-    contactEmail: 'security.office@student.edu',
-    icon: Icons.headphones_rounded,
-    accentColor: Color(0xFF0F766E),
-    backgroundColor: Color(0xFF99F6E4),
-  ),
-  ItemData(
-    isLost: false,
-    title: 'Green Water Bottle',
-    description:
-        'Reusable bottle found beside the gym entrance after the evening session. It has a small campus sticker on it.',
-    location: 'Sports Center',
-    date: 'Feb 14, 2026',
-    category: 'Bottles',
-    contactEmail: 'maria.kiss@student.edu',
-    icon: Icons.local_drink_rounded,
-    accentColor: Color(0xFF15803D),
-    backgroundColor: Color(0xFFDCFCE7),
-  ),
-  ItemData(
-    isLost: false,
-    title: 'Student ID Card Holder',
-    description:
-        'Transparent card holder with student ID and transport pass found outside the engineering labs.',
-    location: 'Engineering Building',
-    date: 'Feb 12, 2026',
-    category: 'Documents',
-    contactEmail: 'reception@inf.elte.hu',
-    icon: Icons.badge_rounded,
-    accentColor: Color(0xFF7C3AED),
-    backgroundColor: Color(0xFFEDE9FE),
-  ),
-];
+    title: model.title,
+    description: model.description,
+    location: model.location,
+    date: _formatDate(model.date),
+    category: model.category,
+    contactEmail: model.userId,
+    icon: _categoryIcons[model.category] ?? Icons.help_outline_rounded,
+    backgroundColor: colors.$1,
+    accentColor: colors.$2,
+  );
+}
+
+String _formatDate(DateTime dt) {
+  const months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+}
 
 class FoundItemsView extends StatefulWidget {
   const FoundItemsView({super.key});
@@ -63,26 +74,28 @@ class FoundItemsView extends StatefulWidget {
 }
 
 class _FoundItemsViewState extends State<FoundItemsView> {
+  final ItemController _itemController = ItemController();
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedCategory = foundCategories.first;
   String _searchQuery = '';
 
-  List<ItemData> get _filteredItems {
+  List<ItemData> _filter(List<ItemReportModel> items) {
     final query = _searchQuery.trim().toLowerCase();
-
-    return foundSampleItems.where((item) {
-      final matchesCategory =
-          _selectedCategory == 'All' || item.category == _selectedCategory;
-      final matchesQuery =
-          query.isEmpty ||
-          item.title.toLowerCase().contains(query) ||
-          item.description.toLowerCase().contains(query) ||
-          item.location.toLowerCase().contains(query) ||
-          item.category.toLowerCase().contains(query);
-
-      return matchesCategory && matchesQuery;
-    }).toList();
+    return items
+        .where((item) {
+          final matchesCategory =
+              _selectedCategory == 'All' || item.category == _selectedCategory;
+          final matchesQuery =
+              query.isEmpty ||
+              item.title.toLowerCase().contains(query) ||
+              item.description.toLowerCase().contains(query) ||
+              item.location.toLowerCase().contains(query) ||
+              item.category.toLowerCase().contains(query);
+          return matchesCategory && matchesQuery;
+        })
+        .map(_toItemData)
+        .toList();
   }
 
   @override
@@ -99,16 +112,35 @@ class _FoundItemsViewState extends State<FoundItemsView> {
         children: [
           const HomeHeader(),
           Expanded(
-            child: FoundItemsBody(
-              searchController: _searchController,
-              searchQuery: _searchQuery,
-              selectedCategory: _selectedCategory,
-              filteredItems: _filteredItems,
-              onSearchChanged: (value) {
-                setState(() => _searchQuery = value);
-              },
-              onCategorySelected: (category) {
-                setState(() => _selectedCategory = category);
+            child: StreamBuilder<List<ItemReportModel>>(
+              stream: _itemController.getFoundItems(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Error loading items:\n${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  );
+                }
+                final items = _filter(snapshot.data ?? []);
+                return FoundItemsBody(
+                  searchController: _searchController,
+                  searchQuery: _searchQuery,
+                  selectedCategory: _selectedCategory,
+                  filteredItems: items,
+                  onSearchChanged: (value) =>
+                      setState(() => _searchQuery = value),
+                  onCategorySelected: (category) =>
+                      setState(() => _selectedCategory = category),
+                );
               },
             ),
           ),

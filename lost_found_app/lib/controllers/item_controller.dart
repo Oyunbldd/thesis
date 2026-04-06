@@ -1,43 +1,12 @@
 import '../models/item_report_model.dart';
+import '../services/database_service.dart';
 
 class ItemController {
-  final List<ItemReportModel> _reports = [];
+  final DatabaseService _db = DatabaseService();
 
-  void createReport(ItemReportModel report) {
-    _reports.add(report);
-  }
+  Stream<List<ItemReportModel>> getLostItems() => _db.getLostItems();
 
-  List<ItemReportModel> getAllReports() {
-    return List.unmodifiable(_reports);
-  }
+  Stream<List<ItemReportModel>> getFoundItems() => _db.getFoundItems();
 
-  List<ItemReportModel> getLostReports() {
-    return _reports.where((report) => report.type == 'lost').toList();
-  }
-
-  List<ItemReportModel> getFoundReports() {
-    return _reports.where((report) => report.type == 'found').toList();
-  }
-
-  void markResolved(String reportId) {
-    for (int i = 0; i < _reports.length; i++) {
-      if (_reports[i].id == reportId) {
-        final report = _reports[i];
-
-        _reports[i] = ItemReportModel(
-          id: report.id,
-          title: report.title,
-          description: report.description,
-          category: report.category,
-          type: report.type,
-          status: 'resolved',
-          imageUrl: report.imageUrl,
-          location: report.location,
-          date: report.date,
-          userId: report.userId,
-        );
-        break;
-      }
-    }
-  }
+  Future<void> createReport(ItemReportModel report) => _db.createReport(report);
 }

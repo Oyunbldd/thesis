@@ -1,25 +1,28 @@
-class AuthController {
-  bool validateUniversityEmail(String email) {
-    final trimmedEmail = email.trim().toLowerCase();
+import '../services/auth_service.dart';
 
-    return trimmedEmail.endsWith('@inf.elte.hu');
+class AuthController {
+  final AuthService _authService = AuthService();
+
+  bool validateUniversityEmail(String email) {
+    return email.trim().toLowerCase().endsWith('@inf.elte.hu');
   }
 
-  bool login({required String email, required String password}) {
+  Future<void> login({required String email, required String password}) async {
     final trimmedEmail = email.trim();
     final trimmedPassword = password.trim();
 
     if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
-      return false;
+      throw Exception('Email and password are required.');
     }
 
     if (!validateUniversityEmail(trimmedEmail)) {
-      return false;
+      throw Exception('Only @inf.elte.hu email addresses are allowed.');
     }
-    return true;
+
+    await _authService.signIn(trimmedEmail, trimmedPassword);
   }
 
-  void logout() {
-    // Add some code later
+  Future<void> logout() async {
+    await _authService.signOut();
   }
 }

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/item_controller.dart';
+import '../../models/item_report_model.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/home_header.dart';
 import 'report_found_item_view.dart';
 import 'report_lost_item_view.dart';
-
-const int reportLostTotal = 3;
-const int reportFoundTotal = 5;
 
 class CreateReportView extends StatelessWidget {
   const CreateReportView({super.key});
@@ -29,72 +28,92 @@ class CreateReportView extends StatelessWidget {
   }
 }
 
-class ReportViewBody extends StatelessWidget {
+class ReportViewBody extends StatefulWidget {
   const ReportViewBody({super.key});
 
   @override
+  State<ReportViewBody> createState() => _ReportViewBodyState();
+}
+
+class _ReportViewBodyState extends State<ReportViewBody> {
+  final ItemController _itemController = ItemController();
+
+  @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 14, 12, 20),
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Expanded(
-              child: _StatsCard(
-                title: 'Lost Items',
-                count: reportLostTotal,
-                subtitle: 'Total reported',
-                icon: Icons.error_outline_rounded,
-                iconColor: Color(0xFFFF1D1D),
-                countColor: Color(0xFFD30909),
-                background: LinearGradient(
-                  colors: [Color(0xFFFFF2F2), Color(0xFFFFE4E4)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+    return StreamBuilder<List<ItemReportModel>>(
+      stream: _itemController.getLostItems(),
+      builder: (context, lostSnap) {
+        return StreamBuilder<List<ItemReportModel>>(
+          stream: _itemController.getFoundItems(),
+          builder: (context, foundSnap) {
+            final lostCount = lostSnap.data?.length;
+            final foundCount = foundSnap.data?.length;
+
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(12, 14, 12, 20),
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _StatsCard(
+                        title: 'Lost Items',
+                        count: lostCount,
+                        subtitle: 'Total reported',
+                        icon: Icons.error_outline_rounded,
+                        iconColor: const Color(0xFFFF1D1D),
+                        countColor: const Color(0xFFD30909),
+                        background: const LinearGradient(
+                          colors: [Color(0xFFFFF2F2), Color(0xFFFFE4E4)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _StatsCard(
+                        title: 'Found Items',
+                        count: foundCount,
+                        subtitle: 'Total reported',
+                        icon: Icons.inventory_2_outlined,
+                        iconColor: const Color(0xFF0C9F3A),
+                        countColor: const Color(0xFF09863C),
+                        background: const LinearGradient(
+                          colors: [Color(0xFFEEFFF3), Color(0xFFE0FAE8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            SizedBox(width: 16),
-            const Expanded(
-              child: _StatsCard(
-                title: 'Found Items',
-                count: reportFoundTotal,
-                subtitle: 'Total reported',
-                icon: Icons.inventory_2_outlined,
-                iconColor: Color(0xFF0C9F3A),
-                countColor: Color(0xFF09863C),
-                background: LinearGradient(
-                  colors: [Color(0xFFEEFFF3), Color(0xFFE0FAE8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                const SizedBox(height: 22),
+                _ActionPanel(
+                  onLostTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ReportLostItemView(),
+                      ),
+                    );
+                  },
+                  onFoundTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ReportFoundItemView(),
+                      ),
+                    );
+                  },
                 ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 22),
-        _ActionPanel(
-          onLostTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const ReportLostItemView(),
-              ),
+                const SizedBox(height: 18),
+                const _TipsCard(),
+                const SizedBox(height: 22),
+                const _RecentReportsCard(),
+              ],
             );
           },
-          onFoundTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const ReportFoundItemView(),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 18),
-        const _TipsCard(),
-        const SizedBox(height: 22),
-        const _RecentReportsCard(),
-      ],
+        );
+      },
     );
   }
 }
@@ -290,7 +309,7 @@ class _StatsCard extends StatelessWidget {
   });
 
   final String title;
-  final int count;
+  final int? count; // null while stream is loading
   final String subtitle;
   final IconData icon;
   final Color iconColor;
@@ -329,7 +348,7 @@ class _StatsCard extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '$count',
+            count != null ? '$count' : '--',
             style: textTheme.headlineLarge?.copyWith(
               color: countColor,
               fontSize: 44,
