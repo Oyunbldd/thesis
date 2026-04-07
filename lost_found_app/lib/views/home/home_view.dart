@@ -221,5 +221,6 @@ ItemData _toItemData(ItemReportModel model, {required bool isLost}) {
     icon: _categoryIcons[model.category] ?? Icons.help_outline_rounded,
     backgroundColor: colors.$1,
     accentColor: colors.$2,
+    imageUrl: model.imageUrl,
   );
 }

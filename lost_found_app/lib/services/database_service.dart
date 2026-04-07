@@ -42,9 +42,13 @@ class DatabaseService {
   Future<String> _uploadImage(String localPath, String reportId) async {
     final file = File(localPath);
     final dotIndex = localPath.lastIndexOf('.');
-    final rawExt = dotIndex != -1 ? localPath.substring(dotIndex + 1).toLowerCase() : 'jpg';
+    final rawExt = dotIndex != -1
+        ? localPath.substring(dotIndex + 1).toLowerCase()
+        : 'jpg';
     final ext = rawExt.isEmpty ? 'jpg' : rawExt;
-    final contentType = ext == 'jpg' || ext == 'jpeg' ? 'image/jpeg' : 'image/$ext';
+    final contentType = ext == 'jpg' || ext == 'jpeg'
+        ? 'image/jpeg'
+        : 'image/$ext';
     final ref = _storage.ref('item_images/$reportId.$ext');
     final uploadTask = await ref.putFile(
       file,

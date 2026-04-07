@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'services/notification_service.dart';
 import 'utils/app_routes.dart';
 import 'utils/app_theme.dart';
 import 'views/home/home_view.dart';
@@ -24,14 +25,14 @@ class MyApp extends StatelessWidget {
             );
           }
           if (snapshot.hasData) {
+            // Initialize FCM token saving and foreground message listener
+            NotificationService().initialize(context);
             return const HomeView();
           }
           return const LoginView();
         },
       ),
-      routes: {
-        AppRoutes.home: (context) => const HomeView(),
-      },
+      routes: {AppRoutes.home: (context) => const HomeView()},
     );
   }
 }

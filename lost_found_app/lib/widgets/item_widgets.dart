@@ -14,6 +14,7 @@ class ItemData {
     required this.accentColor,
     required this.backgroundColor,
     required this.isLost,
+    this.imageUrl = '',
   });
 
   final String title;
@@ -26,6 +27,7 @@ class ItemData {
   final Color accentColor;
   final Color backgroundColor;
   final bool isLost;
+  final String imageUrl;
 }
 
 class ItemSearchBar extends StatelessWidget {
@@ -216,32 +218,21 @@ class ItemCard extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(30),
                 ),
-                child: Container(
+                child: SizedBox(
                   height: 235,
                   width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [item.backgroundColor, item.accentColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      _CategoryBadge(label: item.category),
-                      const Spacer(),
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Icon(
-                          item.icon,
-                          size: 132,
-                          color: Colors.white.withValues(alpha: 0.88),
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: item.imageUrl.isNotEmpty
+                      ? Image.network(
+                          item.imageUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null
+                                  ? child
+                                  : _ItemImagePlaceholder(item: item),
+                          errorBuilder: (_, __, ___) =>
+                              _ItemImagePlaceholder(item: item),
+                        )
+                      : _ItemImagePlaceholder(item: item),
                 ),
               ),
               Padding(
@@ -281,6 +272,43 @@ class ItemCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ItemImagePlaceholder extends StatelessWidget {
+  const _ItemImagePlaceholder({required this.item});
+
+  final ItemData item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [item.backgroundColor, item.accentColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _CategoryBadge(label: item.category),
+          const Spacer(),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Icon(
+              item.icon,
+              size: 120,
+              color: Colors.white.withValues(alpha: 0.88),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -401,27 +429,21 @@ class ItemDetailsView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 26),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(28),
-                child: Container(
-                  height: 160,
+                child: SizedBox(
+                  height: 220,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [item.backgroundColor, item.accentColor],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Icon(
-                        item.icon,
-                        size: 120,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ),
+                  child: item.imageUrl.isNotEmpty
+                      ? Image.network(
+                          item.imageUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (_, child, progress) =>
+                              progress == null
+                                  ? child
+                                  : _ItemImagePlaceholder(item: item),
+                          errorBuilder: (_, __, ___) =>
+                              _ItemImagePlaceholder(item: item),
+                        )
+                      : _ItemImagePlaceholder(item: item),
                 ),
               ),
             ),

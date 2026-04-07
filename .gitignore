@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Build artifacts
+lost_found_app/build/
+lost_found_app/android/.gradle/
+
+# Xcode user state
+lost_found_app/ios/Runner.xcworkspace/xcuserdata/
+lost_found_app/macos/Runner.xcworkspace/xcuserdata/
+
+# Claude Code
+.claude/
+
+# Thesis assets
+Thesis Latex/
+uml.png
