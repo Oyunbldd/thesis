@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../controllers/item_controller.dart';
 import '../../models/item_report_model.dart';
+import '../../services/matching_service.dart';
 import '../../utils/app_theme.dart';
 
 class ReportLostItemView extends StatefulWidget {
@@ -116,6 +117,8 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
           userId: uid,
         );
         await _itemController.createReport(report);
+        // Run matching in background — don't await so UI pops immediately
+        MatchingService().findMatchesAndNotify(report);
         if (mounted) Navigator.of(context).pop();
       } catch (e) {
         if (mounted) {
