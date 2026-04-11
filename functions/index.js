@@ -13,13 +13,22 @@ exports.sendMatchNotification = functions.firestore
     const data = snap.data();
     const { toUserId, title, body, newItemId, newItemType, matchedItemId } = data;
 
-    if (!toUserId) return null;
+    if (!toUserId) {
+      console.log('ERROR: toUserId is missing');
+      return null;
+    }
 
     // Get the target user's FCM token
     const userDoc = await admin.firestore().collection('users').doc(toUserId).get();
     const fcmToken = userDoc.data()?.fcmToken;
+    console.log('toUserId:', toUserId);
+    console.log('userDoc exists:', userDoc.exists);
+    console.log('fcmToken:', fcmToken ? 'found' : 'NOT FOUND');
 
-    if (!fcmToken) return null;
+    if (!fcmToken) {
+      console.log('ERROR: fcmToken is null or missing for user', toUserId);
+      return null;
+    }
 
     // Send the push notification
     await admin.messaging().send({

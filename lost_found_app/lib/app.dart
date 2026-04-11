@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           }
           if (snapshot.hasData) {
             // Initialize FCM token saving and foreground message listener
-            NotificationService().initialize(context);
+            NotificationService().initialize();
             return const HomeView();
           }
           return const LoginView();

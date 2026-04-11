@@ -1,7 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin _localNotifications =
+    FlutterLocalNotificationsPlugin();
+
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -11,9 +17,8 @@ class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // Call this once when the user is logged in
-  Future<void> initialize(BuildContext context) async {
-    // 1. Request permission (iOS requires explicit permission)
+  Future<void> initialize() async {
+    // 1. Request permission
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
@@ -26,38 +31,44 @@ class NotificationService {
 
     if (!granted) return;
 
-    // 2. Save token to Firestore so Cloud Function can reach this device
-    await _saveToken();
+    // 2. Set up local notifications for foreground display
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+    await _localNotifications.initialize(
+      const InitializationSettings(iOS: iosSettings),
+    );
 
-    // 3. Refresh token automatically if it changes
+    // 3. Tell FCM to show notifications in foreground on iOS
+    await _messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    // 4. Save token to Firestore
+    await _saveToken();
     _messaging.onTokenRefresh.listen(_saveTokenToFirestore);
 
-    // 4. Handle notifications received while app is open (foreground)
+    // 5. Handle foreground messages — show as native notification
     FirebaseMessaging.onMessage.listen((message) {
-      final title = message.notification?.title ?? 'Match found!';
-      final body = message.notification?.body ?? '';
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-                if (body.isNotEmpty) ...[const SizedBox(height: 4), Text(body)],
-              ],
-            ),
-            duration: const Duration(seconds: 5),
-            behavior: SnackBarBehavior.floating,
+      final notification = message.notification;
+      if (notification == null) return;
+
+      _localNotifications.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        const NotificationDetails(
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
           ),
-        );
-      }
+        ),
+      );
     });
   }
 
