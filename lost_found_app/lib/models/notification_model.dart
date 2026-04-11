@@ -1,41 +1,40 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class NotificationModel {
   final String id;
+  final String toUserId;
   final String title;
-  final String message;
-  final String userId;
+  final String body;
+  final String newItemId;
+  final String newItemType;
+  final String matchedItemId;
+  final bool read;
   final DateTime createdAt;
-  final bool isRead;
 
   const NotificationModel({
     required this.id,
+    required this.toUserId,
     required this.title,
-    required this.message,
-    required this.userId,
+    required this.body,
+    required this.newItemId,
+    required this.newItemType,
+    required this.matchedItemId,
+    required this.read,
     required this.createdAt,
-    required this.isRead,
   });
 
-  factory NotificationModel.fromMap(Map<String, dynamic> map) {
+  factory NotificationModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return NotificationModel(
-      id: map['id'] as String? ?? '',
-      title: map['title'] as String? ?? '',
-      message: map['message'] as String? ?? '',
-      userId: map['userId'] as String? ?? '',
-      createdAt:
-          DateTime.tryParse(map['createdAt'] as String? ?? '') ??
-          DateTime.now(),
-      isRead: map['isRead'] as bool? ?? false,
+      id: doc.id,
+      toUserId: data['toUserId'] as String? ?? '',
+      title: data['title'] as String? ?? '',
+      body: data['body'] as String? ?? '',
+      newItemId: data['newItemId'] as String? ?? '',
+      newItemType: data['newItemType'] as String? ?? '',
+      matchedItemId: data['matchedItemId'] as String? ?? '',
+      read: data['read'] as bool? ?? false,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'message': message,
-      'userId': userId,
-      'createdAt': createdAt.toIso8601String(),
-      'isRead': isRead,
-    };
   }
 }

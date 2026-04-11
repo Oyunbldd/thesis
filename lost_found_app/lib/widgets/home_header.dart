@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lost_found_app/utils/app_theme.dart';
+import 'package:lost_found_app/views/notifications/notifications_view.dart';
 import 'package:lost_found_app/views/profile_view.dart/profile_view.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -75,26 +77,54 @@ class HomeHeader extends StatelessWidget {
               ),
             ],
           ),
-          Stack(
-            children: [
-              const Icon(
-                Icons.notifications_none,
-                size: 28,
-                color: Colors.white,
+          GestureDetector(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const NotificationsView(),
               ),
-              // Positioned(
-              //   right: 0,
-              //   top: 0,
-              //   child: Container(
-              //     width: 10,
-              //     height: 10,
-              //     decoration: const BoxDecoration(
-              //       color: Colors.red,
-              //       shape: BoxShape.circle,
-              //     ),
-              //   ),
-              // ),
-            ],
+            ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('notifications')
+                  .where('toUserId', isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? '')
+                  .where('read', isEqualTo: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                final unreadCount = snapshot.data?.docs.length ?? 0;
+                return Stack(
+                  children: [
+                    const Icon(
+                      Icons.notifications_none,
+                      size: 28,
+                      color: Colors.white,
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 16,
+                          height: 16,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              unreadCount > 9 ? '9+' : '$unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
