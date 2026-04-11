@@ -90,6 +90,12 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     });
   }
 
+  void _skipPhoto() {
+    setState(() {
+      _step += 1;
+    });
+  }
+
   Future<void> _goNext() async {
     if (!_canContinue || _isSubmitting) return;
 
@@ -236,7 +242,7 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
                           imagePath: _selectedImagePath,
                           permissionMessage: _photoPermissionMessage,
                           onPickPhoto: _pickGalleryImage,
-                          onSkip: _goNext,
+                          onSkip: _skipPhoto,
                         ),
                       ],
                       1 => [

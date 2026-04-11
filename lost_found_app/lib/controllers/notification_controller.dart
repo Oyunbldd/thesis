@@ -1,33 +1,27 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../models/notification_model.dart';
 
 class NotificationController {
-  final List<NotificationModel> _notifications = [];
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  void addNotification(NotificationModel notification) {
-    _notifications.add(notification);
-  }
-
-  List<NotificationModel> getUserNotifications(String userId) {
-    return _notifications
-        .where((notification) => notification.userId == userId)
-        .toList();
-  }
-
-  void markAsRead(String notificationId) {
-    for (int i = 0; i < _notifications.length; i++) {
-      if (_notifications[i].id == notificationId) {
-        final notification = _notifications[i];
-
-        _notifications[i] = NotificationModel(
-          id: notification.id,
-          title: notification.title,
-          message: notification.message,
-          userId: notification.userId,
-          createdAt: notification.createdAt,
-          isRead: true,
+  Stream<List<NotificationModel>> getUserNotifications(String userId) {
+    return _db
+        .collection('notifications')
+        .where('toUserId', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => NotificationModel.fromFirestore(doc))
+              .toList(),
         );
-        break;
-      }
-    }
+  }
+
+  Future<void> markAsRead(String notificationId) async {
+    await _db
+        .collection('notifications')
+        .doc(notificationId)
+        .update({'read': true});
   }
 }
