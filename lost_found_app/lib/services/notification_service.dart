@@ -101,10 +101,11 @@ class NotificationService {
   }
 
   Future<void> _saveTokenToFirestore(String token) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    await _db.collection('users').doc(uid).set({
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    await _db.collection('users').doc(user.uid).set({
       'fcmToken': token,
+      'email': user.email ?? '',
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }

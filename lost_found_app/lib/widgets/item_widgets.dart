@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
@@ -15,6 +16,7 @@ class ItemData {
     required this.backgroundColor,
     required this.isLost,
     this.imageUrl = '',
+    this.userId = '',
   });
 
   final String title;
@@ -28,6 +30,7 @@ class ItemData {
   final Color backgroundColor;
   final bool isLost;
   final String imageUrl;
+  final String userId;
 }
 
 class ItemSearchBar extends StatelessWidget {
@@ -144,8 +147,9 @@ class ItemEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final filterText =
-        selectedCategory == 'All' ? 'all categories' : selectedCategory;
+    final filterText = selectedCategory == 'All'
+        ? 'all categories'
+        : selectedCategory;
     final queryText = searchQuery.trim().isEmpty
         ? 'without a search term'
         : 'for "${searchQuery.trim()}"';
@@ -227,8 +231,8 @@ class ItemCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           loadingBuilder: (_, child, progress) =>
                               progress == null
-                                  ? child
-                                  : _ItemImagePlaceholder(item: item),
+                              ? child
+                              : _ItemImagePlaceholder(item: item),
                           errorBuilder: (_, __, ___) =>
                               _ItemImagePlaceholder(item: item),
                         )
@@ -363,20 +367,48 @@ class ItemInfoRow extends StatelessWidget {
   }
 }
 
-class ItemDetailsView extends StatelessWidget {
-  const ItemDetailsView({
-    super.key,
-    required this.item,
-    this.scrollController,
-  });
+class ItemDetailsView extends StatefulWidget {
+  const ItemDetailsView({super.key, required this.item, this.scrollController});
 
   final ItemData item;
   final ScrollController? scrollController;
 
   @override
+  State<ItemDetailsView> createState() => _ItemDetailsViewState();
+}
+
+class _ItemDetailsViewState extends State<ItemDetailsView> {
+  String _resolvedEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEmail();
+  }
+
+  Future<void> _fetchEmail() async {
+    print('=== _fetchEmail called, userId: ${widget.item.userId}');
+    if (widget.item.userId.isEmpty) return;
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.item.userId)
+        .get();
+    print('=== doc exists: ${doc.exists}, data: ${doc.data()}');
+    final email = doc.data()?['email'] as String? ?? '';
+    print('=== resolved email: $email');
+    if (email.isNotEmpty && mounted) {
+      setState(() => _resolvedEmail = email);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final isLost = item.isLost;
+    final isLost = widget.item.isLost;
+    final item = widget.item;
+    final contactEmail = _resolvedEmail.isNotEmpty
+        ? _resolvedEmail
+        : item.contactEmail;
 
     return Container(
       width: double.infinity,
@@ -385,7 +417,7 @@ class ItemDetailsView extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
       ),
       child: SingleChildScrollView(
-        controller: scrollController,
+        controller: widget.scrollController,
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).padding.bottom + 12,
         ),
@@ -438,8 +470,8 @@ class ItemDetailsView extends StatelessWidget {
                           fit: BoxFit.cover,
                           loadingBuilder: (_, child, progress) =>
                               progress == null
-                                  ? child
-                                  : _ItemImagePlaceholder(item: item),
+                              ? child
+                              : _ItemImagePlaceholder(item: item),
                           errorBuilder: (_, __, ___) =>
                               _ItemImagePlaceholder(item: item),
                         )
@@ -549,7 +581,7 @@ class ItemDetailsView extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      item.contactEmail,
+                      contactEmail.isNotEmpty ? contactEmail : 'Not available',
                       style: textTheme.headlineMedium?.copyWith(
                         color: isLost
                             ? AppTheme.primary
@@ -595,9 +627,7 @@ class _ItemStatusBadge extends StatelessWidget {
       child: Text(
         isLost ? 'Lost' : 'Found',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: isLost
-              ? const Color(0xFFDC2626)
-              : const Color(0xFF15803D),
+          color: isLost ? const Color(0xFFDC2626) : const Color(0xFF15803D),
           fontWeight: FontWeight.w700,
         ),
       ),

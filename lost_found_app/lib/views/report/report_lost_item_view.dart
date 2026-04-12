@@ -104,6 +104,7 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
       setState(() => _isSubmitting = true);
       try {
         final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+        final email = FirebaseAuth.instance.currentUser?.email ?? '';
         final report = ItemReportModel(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           title: _itemNameController.text.trim(),
@@ -115,6 +116,7 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
           location: _selectedLocation!,
           date: _dateLost!,
           userId: uid,
+          userEmail: email,
         );
         await _itemController.createReport(report);
         // Run matching in background — don't await so UI pops immediately
