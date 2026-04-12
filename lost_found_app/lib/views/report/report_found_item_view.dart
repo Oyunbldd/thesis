@@ -181,8 +181,8 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _dateFound ?? DateTime.now(),
-      firstDate: DateTime(2024),
-      lastDate: DateTime(2030),
+      firstDate: DateTime(2026),
+      lastDate: DateTime.now(),
     );
 
     if (picked != null) {
@@ -461,7 +461,6 @@ class _FoundProgressHeader extends StatelessWidget {
     );
   }
 }
-
 
 class _FoundStepHeader extends StatelessWidget {
   const _FoundStepHeader({
