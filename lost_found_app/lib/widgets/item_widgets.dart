@@ -387,15 +387,12 @@ class _ItemDetailsViewState extends State<ItemDetailsView> {
   }
 
   Future<void> _fetchEmail() async {
-    print('=== _fetchEmail called, userId: ${widget.item.userId}');
     if (widget.item.userId.isEmpty) return;
     final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(widget.item.userId)
         .get();
-    print('=== doc exists: ${doc.exists}, data: ${doc.data()}');
     final email = doc.data()?['email'] as String? ?? '';
-    print('=== resolved email: $email');
     if (email.isNotEmpty && mounted) {
       setState(() => _resolvedEmail = email);
     }

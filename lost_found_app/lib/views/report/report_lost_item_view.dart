@@ -154,8 +154,8 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _dateLost ?? DateTime.now(),
-      firstDate: DateTime(2024),
-      lastDate: DateTime(2030),
+      firstDate: DateTime(2026),
+      lastDate: DateTime.now(),
     );
 
     if (picked != null) {

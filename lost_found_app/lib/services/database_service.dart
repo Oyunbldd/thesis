@@ -12,17 +12,25 @@ class DatabaseService {
   Stream<List<ItemReportModel>> getLostItems() {
     return _db
         .collection('lost_items')
-        .orderBy('date', descending: true)
+        .where('status', isEqualTo: 'open')
         .snapshots()
-        .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
+        .map((snap) {
+          final items = snap.docs.map(ItemReportModel.fromFirestore).toList();
+          items.sort((a, b) => b.date.compareTo(a.date));
+          return items;
+        });
   }
 
   Stream<List<ItemReportModel>> getFoundItems() {
     return _db
         .collection('found_items')
-        .orderBy('date', descending: true)
+        .where('status', isEqualTo: 'open')
         .snapshots()
-        .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
+        .map((snap) {
+          final items = snap.docs.map(ItemReportModel.fromFirestore).toList();
+          items.sort((a, b) => b.date.compareTo(a.date));
+          return items;
+        });
   }
 
   Stream<List<ItemReportModel>> getUserItems(String userId) {
