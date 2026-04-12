@@ -11,6 +11,7 @@ class ItemReportModel {
   final String location;
   final DateTime date;
   final String userId;
+  final String userEmail;
 
   const ItemReportModel({
     required this.id,
@@ -23,6 +24,7 @@ class ItemReportModel {
     required this.location,
     required this.date,
     required this.userId,
+    this.userEmail = '',
   });
 
   factory ItemReportModel.fromMap(Map<String, dynamic> map) {
@@ -37,6 +39,7 @@ class ItemReportModel {
       location: map['location'] as String? ?? '',
       date: DateTime.tryParse(map['date'] as String? ?? '') ?? DateTime.now(),
       userId: map['userId'] as String? ?? '',
+      userEmail: map['userEmail'] as String? ?? '',
     );
   }
 
@@ -62,6 +65,7 @@ class ItemReportModel {
       location: map['location'] as String? ?? '',
       date: date,
       userId: map['userId'] as String? ?? '',
+      userEmail: map['userEmail'] as String? ?? '',
     );
   }
 
@@ -77,6 +81,7 @@ class ItemReportModel {
       'location': location,
       'date': date.toIso8601String(),
       'userId': userId,
+      'userEmail': userEmail,
     };
   }
 
@@ -91,6 +96,7 @@ class ItemReportModel {
       'location': location,
       'date': Timestamp.fromDate(date),
       'userId': userId,
+      'userEmail': userEmail,
     };
   }
 }
