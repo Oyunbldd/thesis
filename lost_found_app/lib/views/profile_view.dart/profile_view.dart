@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_theme.dart';
+import 'my_reports_view.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -155,6 +156,8 @@ class ProfileView extends StatelessWidget {
                 const SizedBox(height: 32),
                 _SectionLabel(label: 'Actions'),
                 const SizedBox(height: 12),
+                _MyReportsButton(),
+                const SizedBox(height: 12),
                 _LogoutButton(),
               ],
             ),
@@ -247,6 +250,33 @@ class _InfoCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MyReportsButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const MyReportsView()),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.primary,
+          side: BorderSide(color: AppTheme.primary.withValues(alpha: 0.5)),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: const Icon(Icons.list_alt_rounded),
+        label: const Text(
+          'My Reports',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
       ),
     );
   }
