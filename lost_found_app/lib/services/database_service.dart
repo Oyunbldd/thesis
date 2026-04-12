@@ -25,6 +25,31 @@ class DatabaseService {
         .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
   }
 
+  Stream<List<ItemReportModel>> getUserItems(String userId) {
+    final lost = _db
+        .collection('lost_items')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
+
+    final found = _db
+        .collection('found_items')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
+
+    return lost.asyncMap((lostItems) async {
+      final foundItems = await found.first;
+      return [...lostItems, ...foundItems]
+        ..sort((a, b) => b.date.compareTo(a.date));
+    });
+  }
+
+  Future<void> updateItemStatus(String itemId, String type, String status) async {
+    final collection = type == 'lost' ? 'lost_items' : 'found_items';
+    await _db.collection(collection).doc(itemId).update({'status': status});
+  }
+
   Future<void> createReport(ItemReportModel report) async {
     final collection = report.type == 'lost' ? 'lost_items' : 'found_items';
 
