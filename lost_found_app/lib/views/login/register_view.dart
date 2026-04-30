@@ -36,9 +36,27 @@ class _RegisterViewState extends State<RegisterView> {
         password: _passwordController.text,
         confirmPassword: _confirmPasswordController.text,
       );
-      // Pop back to root so the StreamBuilder in app.dart can show HomeView.
       if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => AlertDialog(
+            title: const Text('Check your inbox'),
+            content: const Text(
+              'A verification link has been sent to your email address. '
+              'Please verify your email before logging in.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // close dialog
+                  Navigator.of(context).popUntil((route) => route.isFirst); // back to login
+                },
+                child: const Text('Go to Login'),
+              ),
+            ],
+          ),
+        );
       }
     } on FirebaseAuthException catch (e) {
       setState(() {

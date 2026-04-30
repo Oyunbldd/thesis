@@ -49,6 +49,10 @@ class AuthController {
     await _authService.register(trimmedEmail, trimmedPassword);
   }
 
+  Future<void> sendVerificationEmail() async {
+    await _authService.sendVerificationEmail();
+  }
+
   Future<void> logout() async {
     await _authService.signOut();
   }

@@ -9,20 +9,35 @@ class AuthService {
 
   User? get currentUser => _auth.currentUser;
 
-  Future<UserCredential> signIn(String email, String password) {
-    return _auth.signInWithEmailAndPassword(email: email, password: password);
-  }
-
-  Future<UserCredential> register(String email, String password) async {
-    final credential = await _auth.createUserWithEmailAndPassword(
+  Future<UserCredential> signIn(String email, String password) async {
+    final credential = await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
+    if (!credential.user!.emailVerified) {
+      await _auth.signOut();
+      throw FirebaseAuthException(code: 'email-not-verified');
+    }
+    // Save/update user in Firestore only after first verified login
     await _db.collection('users').doc(credential.user!.uid).set({
       'email': email,
       'createdAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
     return credential;
+  }
+
+  Future<void> register(String email, String password) async {
+    final credential = await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    await credential.user!.sendEmailVerification();
+    // Sign out immediately — user must verify email before accessing the app
+    await _auth.signOut();
+  }
+
+  Future<void> sendVerificationEmail() async {
+    await _auth.currentUser?.sendEmailVerification();
   }
 
   Future<void> signOut() => _auth.signOut();
