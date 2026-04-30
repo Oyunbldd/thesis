@@ -757,7 +757,7 @@ class _StepFour extends StatelessWidget {
         const _StepHeader(
           icon: Icons.photo_camera_outlined,
           title: 'Add a photo',
-          subtitle: 'Photos increase match rate by 85%',
+          subtitle: 'A photo helps others identify your item faster',
         ),
         const SizedBox(height: 26),
         InkWell(
