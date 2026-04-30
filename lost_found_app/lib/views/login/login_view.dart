@@ -36,6 +36,9 @@ class _LoginViewState extends State<LoginView> {
     } on FirebaseAuthException catch (e) {
       setState(() {
         switch (e.code) {
+          case 'email-not-verified':
+            _errorMessage =
+                'Your email is not verified yet. Please check your inbox and click the verification link.';
           case 'user-not-found':
           case 'wrong-password':
           case 'invalid-credential':
