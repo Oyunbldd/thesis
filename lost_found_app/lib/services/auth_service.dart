@@ -40,5 +40,9 @@ class AuthService {
     await _auth.currentUser?.sendEmailVerification();
   }
 
+  Future<void> resetPassword(String email) {
+    return _auth.sendPasswordResetEmail(email: email);
+  }
+
   Future<void> signOut() => _auth.signOut();
 }

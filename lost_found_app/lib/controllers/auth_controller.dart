@@ -49,6 +49,20 @@ class AuthController {
     await _authService.register(trimmedEmail, trimmedPassword);
   }
 
+  Future<void> resetPassword({required String email}) async {
+    final trimmedEmail = email.trim();
+
+    if (trimmedEmail.isEmpty) {
+      throw Exception('Email is required.');
+    }
+
+    if (!validateUniversityEmail(trimmedEmail)) {
+      throw Exception('Only @inf.elte.hu email addresses are allowed.');
+    }
+
+    await _authService.resetPassword(trimmedEmail);
+  }
+
   Future<void> sendVerificationEmail() async {
     await _authService.sendVerificationEmail();
   }
