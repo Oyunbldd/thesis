@@ -24,7 +24,12 @@ class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  bool _initialized = false;
+
   Future<void> initialize() async {
+    if (_initialized) return;
+    _initialized = true;
+
     // 1. Request permission
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -96,7 +101,6 @@ class NotificationService {
 
   Future<void> _saveToken() async {
     final token = await _messaging.getToken();
-    print('FCM TOKEN: $token');
     if (token != null) await _saveTokenToFirestore(token);
   }
 

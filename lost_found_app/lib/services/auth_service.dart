@@ -14,11 +14,13 @@ class AuthService {
       email: email,
       password: password,
     );
+
     if (!credential.user!.emailVerified) {
       await _auth.signOut();
       throw FirebaseAuthException(code: 'email-not-verified');
     }
-    // Save/update user in Firestore only after first verified login
+
+    // Persist display name and email for the user's profile
     await _db.collection('users').doc(credential.user!.uid).set({
       'email': email,
       'createdAt': FieldValue.serverTimestamp(),
@@ -40,8 +42,8 @@ class AuthService {
     await _auth.currentUser?.sendEmailVerification();
   }
 
-  Future<void> resetPassword(String email) {
-    return _auth.sendPasswordResetEmail(email: email);
+  Future<void> resetPassword(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
   }
 
   Future<void> signOut() => _auth.signOut();

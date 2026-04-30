@@ -25,6 +25,8 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     'Clothing',
     'Keys',
     'IDs',
+    'Documents',
+    'Bottles',
     'Other',
   ];
 
@@ -181,7 +183,7 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _dateFound ?? DateTime.now(),
-      firstDate: DateTime(2026),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now(),
     );
 

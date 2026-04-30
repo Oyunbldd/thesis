@@ -34,22 +34,25 @@ class DatabaseService {
   }
 
   Stream<List<ItemReportModel>> getUserItems(String userId) {
-    final lost = _db
+    final lostStream = _db
         .collection('lost_items')
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
 
-    final found = _db
+    final foundStream = _db
         .collection('found_items')
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snap) => snap.docs.map(ItemReportModel.fromFirestore).toList());
 
-    return lost.asyncMap((lostItems) async {
-      final foundItems = await found.first;
-      return [...lostItems, ...foundItems]
-        ..sort((a, b) => b.date.compareTo(a.date));
+    // Merge both streams properly — each emits independently and we combine
+    // the latest values from both without leaking subscriptions.
+    return lostStream.asyncExpand((lostItems) {
+      return foundStream.map((foundItems) {
+        return [...lostItems, ...foundItems]
+          ..sort((a, b) => b.date.compareTo(a.date));
+      });
     });
   }
 

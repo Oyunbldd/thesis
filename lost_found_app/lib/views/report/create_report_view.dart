@@ -107,8 +107,6 @@ class _ReportViewBodyState extends State<ReportViewBody> {
                 ),
                 const SizedBox(height: 18),
                 const _TipsCard(),
-                const SizedBox(height: 22),
-                const _RecentReportsCard(),
               ],
             );
           },
@@ -214,88 +212,6 @@ class _ActionPanel extends StatelessWidget {
   }
 }
 
-class _RecentReportsCard extends StatelessWidget {
-  const _RecentReportsCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: const Color(0xFFE9EEF6)),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.secondary.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 22, 28, 20),
-            child: Text(
-              'Your Recent Reports',
-              style: textTheme.headlineMedium?.copyWith(
-                color: const Color(0xFF111318),
-                fontSize: 22,
-              ),
-            ),
-          ),
-          Divider(color: AppTheme.border.withValues(alpha: 0.72), height: 1),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 30, 20, 34),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 96,
-                    height: 96,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF3F4F6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.description_outlined,
-                      size: 44,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  Text(
-                    'No reports yet',
-                    style: textTheme.headlineMedium?.copyWith(
-                      color: const Color(0xFF667085),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Start by reporting an item above',
-                    style: textTheme.titleLarge?.copyWith(
-                      color: const Color(0xFF98A2B3),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _StatsCard extends StatelessWidget {
   const _StatsCard({

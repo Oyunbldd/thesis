@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lost_found_app/utils/app_theme.dart';
-import 'package:lost_found_app/views/notifications/notifications_view.dart';
-import 'package:lost_found_app/views/profile_view.dart/profile_view.dart';
+
+import '../utils/app_theme.dart';
+import '../views/notifications/notifications_view.dart';
+import '../views/profile_view.dart/profile_view.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});

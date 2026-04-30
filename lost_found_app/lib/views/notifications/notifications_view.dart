@@ -1,86 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:lost_found_app/models/item_report_model.dart';
-import 'package:lost_found_app/models/notification_model.dart';
-import 'package:lost_found_app/utils/app_theme.dart';
-import 'package:lost_found_app/widgets/item_widgets.dart';
 
-const _categoryColors = <String, (Color, Color)>{
-  'Electronics': (Color(0xFF99F6E4), Color(0xFF0F766E)),
-  'Accessories': (Color(0xFFEDE9FE), Color(0xFF7C3AED)),
-  'Bottles': (Color(0xFFDCFCE7), Color(0xFF15803D)),
-  'Documents': (Color(0xFFFEF3C7), Color(0xFFF59E0B)),
-  'IDs': (Color(0xFFEDE9FE), Color(0xFF7C3AED)),
-  'Keys': (Color(0xFFFEF3C7), Color(0xFFF59E0B)),
-  'Books': (Color(0xFFFCE7F3), Color(0xFFDB2777)),
-  'Other': (Color(0xFFE0F2FE), Color(0xFF0284C7)),
-};
-
-const _categoryIcons = <String, IconData>{
-  'Electronics': Icons.devices_rounded,
-  'Accessories': Icons.watch_rounded,
-  'Bottles': Icons.local_drink_rounded,
-  'Documents': Icons.description_rounded,
-  'IDs': Icons.badge_rounded,
-  'Keys': Icons.key_rounded,
-  'Books': Icons.book_rounded,
-  'Other': Icons.category_rounded,
-};
-
-String _formatDate(DateTime dt) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
-}
-
-ItemData _toItemData(ItemReportModel model) {
-  final colors =
-      _categoryColors[model.category] ??
-      (const Color(0xFFE2E8F0), const Color(0xFF64748B));
-  return ItemData(
-    isLost: model.type == 'lost',
-    title: model.title,
-    description: model.description,
-    location: model.location,
-    date: _formatDate(model.date),
-    category: model.category,
-    contactEmail: model.userEmail,
-    userId: model.userId,
-    icon: _categoryIcons[model.category] ?? Icons.help_outline_rounded,
-    backgroundColor: colors.$1,
-    accentColor: colors.$2,
-    imageUrl: model.imageUrl,
-  );
-}
+import '../../controllers/notification_controller.dart';
+import '../../models/item_report_model.dart';
+import '../../models/notification_model.dart';
+import '../../utils/app_theme.dart';
+import '../../utils/item_category_utils.dart';
+import '../../widgets/item_widgets.dart';
 
 class NotificationsView extends StatelessWidget {
   const NotificationsView({super.key});
 
-  Future<void> _markAsRead(String docId) async {
-    await FirebaseFirestore.instance
-        .collection('notifications')
-        .doc(docId)
-        .update({'read': true});
-  }
+  static final _controller = NotificationController();
 
   Future<void> _openMatchedItem(
     BuildContext context,
     NotificationModel n,
   ) async {
-    if (!n.read) await _markAsRead(n.id);
+    if (!n.read) await _controller.markAsRead(n.id);
 
     // Determine which collection the new item belongs to
     final collection = n.newItemType == 'found' ? 'found_items' : 'lost_items';
@@ -93,7 +31,7 @@ class NotificationsView extends StatelessWidget {
     if (!doc.exists || !context.mounted) return;
 
     final item = ItemReportModel.fromFirestore(doc);
-    final itemData = _toItemData(item);
+    final itemData = toItemData(item, isLost: item.type == 'lost');
 
     if (!context.mounted) return;
 
@@ -144,12 +82,8 @@ class NotificationsView extends StatelessWidget {
       ),
       body: uid.isEmpty
           ? const Center(child: Text('Not logged in'))
-          : StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('notifications')
-                  .where('toUserId', isEqualTo: uid)
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
+          : StreamBuilder<List<NotificationModel>>(
+              stream: _controller.getUserNotifications(uid),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -159,7 +93,9 @@ class NotificationsView extends StatelessWidget {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                final notifications = snapshot.data ?? [];
+
+                if (notifications.isEmpty) {
                   return const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -178,10 +114,6 @@ class NotificationsView extends StatelessWidget {
                     ),
                   );
                 }
-
-                final notifications = snapshot.data!.docs
-                    .map((doc) => NotificationModel.fromFirestore(doc))
-                    .toList();
 
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
