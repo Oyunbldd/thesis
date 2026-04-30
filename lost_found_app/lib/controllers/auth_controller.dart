@@ -1,7 +1,10 @@
 import '../services/auth_service.dart';
 
 class AuthController {
-  final AuthService _authService = AuthService();
+  final AuthService _authService;
+
+  AuthController({AuthService? authService})
+      : _authService = authService ?? AuthService();
 
   bool validateUniversityEmail(String email) {
     return email.trim().toLowerCase().endsWith('@inf.elte.hu');

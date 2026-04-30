@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/item_report_model.dart';
 
 class MatchingService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  late final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   /// Call this after a new lost or found item is submitted.
   /// It queries the opposite collection for same-category open items,
@@ -44,6 +45,9 @@ class MatchingService {
   ///   +3 same location
   ///   +2 date within 7 days
   ///   +1 date within 30 days
+  @visibleForTesting
+  int scoreItems(ItemReportModel a, ItemReportModel b) => _score(a, b);
+
   int _score(ItemReportModel a, ItemReportModel b) {
     int score = 0;
 
