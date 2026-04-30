@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_theme.dart';
+import 'forgot_password_view.dart';
 import 'register_view.dart';
 
 class LoginView extends StatefulWidget {
@@ -132,7 +133,16 @@ class _LoginViewState extends State<LoginView> {
                             )
                           : const Text('Login'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 4),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const ForgotPasswordView(),
+                        ),
+                      ),
+                      child: const Text('Forgot password?'),
+                    ),
+                    const SizedBox(height: 4),
                     TextButton(
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
