@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_theme.dart';
@@ -21,11 +22,47 @@ class _LoginViewState extends State<LoginView> {
 
   String _errorMessage = '';
   bool _isLoading = false;
+  bool _rememberMe = false;
+  bool _showForgotPassword = false;
+
+  static const String _emailKey = 'saved_email';
+  static const String _rememberMeKey = 'remember_me';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPreferences();
+  }
+
+  Future<void> _loadSavedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedRememberMe = prefs.getBool(_rememberMeKey) ?? false;
+    final savedEmail = prefs.getString(_emailKey);
+    if (mounted) {
+      setState(() {
+        _rememberMe = savedRememberMe;
+        if (savedRememberMe && savedEmail != null) {
+          _emailController.text = savedEmail;
+        }
+      });
+    }
+  }
+
+  Future<void> _saveEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_rememberMeKey, _rememberMe);
+    if (_rememberMe) {
+      await prefs.setString(_emailKey, email);
+    } else {
+      await prefs.remove(_emailKey);
+    }
+  }
 
   Future<void> _handleLogin() async {
     setState(() {
       _errorMessage = '';
       _isLoading = true;
+      _showForgotPassword = false;
     });
 
     try {
@@ -33,6 +70,7 @@ class _LoginViewState extends State<LoginView> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+      await _saveEmail(_emailController.text.trim());
       // Navigation is handled by the StreamBuilder in app.dart.
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -44,6 +82,7 @@ class _LoginViewState extends State<LoginView> {
           case 'wrong-password':
           case 'invalid-credential':
             _errorMessage = 'Invalid email or password.';
+            _showForgotPassword = true;
           case 'user-disabled':
             _errorMessage = 'This account has been disabled.';
           case 'too-many-requests':
@@ -113,7 +152,18 @@ class _LoginViewState extends State<LoginView> {
                       obscureText: true,
                       decoration: const InputDecoration(labelText: 'Password'),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (value) =>
+                              setState(() => _rememberMe = value ?? false),
+                        ),
+                        const Text('Remember me'),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                     if (_errorMessage.isNotEmpty)
                       Text(
                         _errorMessage,
@@ -133,15 +183,17 @@ class _LoginViewState extends State<LoginView> {
                             )
                           : const Text('Login'),
                     ),
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const ForgotPasswordView(),
+                    if (_showForgotPassword) ...[
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const ForgotPasswordView(),
+                          ),
                         ),
+                        child: const Text('Forgot password?'),
                       ),
-                      child: const Text('Forgot password?'),
-                    ),
+                    ],
                     const SizedBox(height: 4),
                     TextButton(
                       onPressed: () => Navigator.of(context).push(
