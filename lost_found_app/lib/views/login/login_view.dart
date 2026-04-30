@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../utils/app_theme.dart';
@@ -22,6 +23,27 @@ class _LoginViewState extends State<LoginView> {
   String _errorMessage = '';
   bool _isLoading = false;
 
+  static const String _emailKey = 'saved_email';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
+
+  Future<void> _loadSavedEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedEmail = prefs.getString(_emailKey);
+    if (savedEmail != null && mounted) {
+      setState(() => _emailController.text = savedEmail);
+    }
+  }
+
+  Future<void> _saveEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_emailKey, email);
+  }
+
   Future<void> _handleLogin() async {
     setState(() {
       _errorMessage = '';
@@ -33,6 +55,7 @@ class _LoginViewState extends State<LoginView> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+      await _saveEmail(_emailController.text.trim());
       // Navigation is handled by the StreamBuilder in app.dart.
     } on FirebaseAuthException catch (e) {
       setState(() {
