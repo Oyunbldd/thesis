@@ -82,12 +82,6 @@ class _HomeViewState extends State<HomeView> {
         .toList();
   }
 
-  int get _currentIndex => switch (_currentItem) {
-        BottomNavItem.lost => 0,
-        BottomNavItem.report => 1,
-        BottomNavItem.found => 2,
-      };
-
   void _goToPage(int index) {
     _pageController.animateToPage(
       index,
@@ -111,10 +105,6 @@ class _HomeViewState extends State<HomeView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const HomeHeader(),
-          _SwipeTabBar(
-            selectedIndex: _currentIndex,
-            onTabSelected: _goToPage,
-          ),
           Expanded(
             child: StreamBuilder<List<ItemReportModel>>(
               stream: _itemController.getLostItems(),
@@ -181,90 +171,4 @@ class _HomeViewState extends State<HomeView> {
   }
 }
 
-// ── Swipe tab bar ─────────────────────────────────────────────────────────────
-
-class _SwipeTabBar extends StatelessWidget {
-  const _SwipeTabBar({
-    required this.selectedIndex,
-    required this.onTabSelected,
-  });
-
-  final int selectedIndex;
-  final ValueChanged<int> onTabSelected;
-
-  static const _tabs = [
-    (label: 'Lost', icon: Icons.search_off_rounded),
-    (label: 'Report', icon: Icons.add_circle_outline_rounded),
-    (label: 'Found', icon: Icons.inventory_2_outlined),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppTheme.surface,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: Container(
-        height: 46,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0F4F8),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: List.generate(_tabs.length, (index) {
-            final tab = _tabs[index];
-            final isSelected = index == selectedIndex;
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => onTabSelected(index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  margin: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        tab.icon,
-                        size: 16,
-                        color: isSelected
-                            ? AppTheme.primary
-                            : const Color(0xFF94A3B8),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        tab.label,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? AppTheme.primary
-                              : const Color(0xFF94A3B8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-}
 
