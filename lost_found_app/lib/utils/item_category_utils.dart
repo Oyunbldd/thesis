@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/item_report_model.dart';
 import '../widgets/item_widgets.dart';
 
-// ── Category lists ────────────────────────────────────────────────────────────
-
+//Category lists
 const List<String> lostItemCategories = [
   'Electronics',
   'Accessories',
@@ -28,8 +27,7 @@ const List<String> foundItemCategories = [
   'Other',
 ];
 
-// ── Colour maps ───────────────────────────────────────────────────────────────
-
+// Color maps
 const lostCategoryColors = <String, (Color, Color)>{
   'Electronics': (Color(0xFF1F2937), Color(0xFF111827)),
   'Accessories': (Color(0xFFDBEAFE), Color(0xFF1D4ED8)),
@@ -53,8 +51,7 @@ const foundCategoryColors = <String, (Color, Color)>{
   'Other': (Color(0xFFE0F2FE), Color(0xFF0284C7)),
 };
 
-// ── Icon map ──────────────────────────────────────────────────────────────────
-
+// Icon map
 const categoryIcons = <String, IconData>{
   'Electronics': Icons.devices_rounded,
   'Accessories': Icons.watch_rounded,
@@ -67,19 +64,29 @@ const categoryIcons = <String, IconData>{
   'Other': Icons.category_rounded,
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
+// Helpers
 String formatDate(DateTime dt) {
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
 }
 
 ItemData toItemData(ItemReportModel model, {required bool isLost}) {
   final colorMap = isLost ? lostCategoryColors : foundCategoryColors;
-  final colors = colorMap[model.category] ??
+  final colors =
+      colorMap[model.category] ??
       (const Color(0xFFE2E8F0), const Color(0xFF64748B));
   return ItemData(
     isLost: isLost,
