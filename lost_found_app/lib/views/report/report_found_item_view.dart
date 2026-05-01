@@ -307,6 +307,7 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
                           child: _FoundPrimaryButton(
                             label: _step == 3 ? 'Post Found Item' : 'Continue',
                             enabled: _canContinue,
+                            isLoading: _isSubmitting,
                             onTap: _goNext,
                             icon: _step == 3
                                 ? Icons.auto_awesome_outlined
@@ -1235,22 +1236,25 @@ class _FoundPrimaryButton extends StatelessWidget {
     required this.enabled,
     required this.onTap,
     this.icon,
+    this.isLoading = false,
   });
 
   final String label;
   final bool enabled;
   final VoidCallback onTap;
   final IconData? icon;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    final background = enabled
+    final active = enabled && !isLoading;
+    final background = active
         ? const Color(0xFF3FA247)
         : const Color(0xFFD9DDE5);
-    final foreground = enabled ? Colors.white : const Color(0xFF98A2B3);
+    final foreground = active ? Colors.white : const Color(0xFF98A2B3);
 
     return InkWell(
-      onTap: enabled ? onTap : null,
+      onTap: active ? onTap : null,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         height: 82,
@@ -1258,26 +1262,37 @@ class _FoundPrimaryButton extends StatelessWidget {
           color: background,
           borderRadius: BorderRadius.circular(24),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, color: foreground, size: 22),
-              const SizedBox(width: 10),
-            ],
-            Flexible(
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+        child: isLoading
+            ? const Center(
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
+                  ),
                 ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, color: foreground, size: 22),
+                    const SizedBox(width: 10),
+                  ],
+                  Flexible(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: foreground,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
