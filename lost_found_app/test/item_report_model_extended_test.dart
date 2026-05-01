@@ -1,17 +1,20 @@
+// AI-GENERATED: This entire file was generated using Claude Sonnet 4.6 (Anthropic).
+// Tool: Claude Code CLI
+// Purpose: Extended test coverage for ItemReportModel (date fallbacks, status defaults, roundtrip serialization)
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lost_found_app/models/item_report_model.dart';
 
 void main() {
-  // ── fromMap date parsing ───────────────────────────────────────────────────
-
+  // AI-GENERATED: fromMap date parsing tests (lines 10–37)
   group('ItemReportModel.fromMap date parsing', () {
-    test('parses valid ISO 8601 date string', () {
+    test('parses valid ISO 8601 date string', () { // AI-GENERATED
       final map = {'date': '2024-06-15T12:00:00.000'};
       final model = ItemReportModel.fromMap(map);
       expect(model.date, DateTime(2024, 6, 15, 12, 0, 0));
     });
 
-    test('falls back to a recent DateTime when date is empty string', () {
+    test('falls back to a recent DateTime when date is empty string', () { // AI-GENERATED
       final before = DateTime.now();
       final model = ItemReportModel.fromMap({'date': ''});
       final after = DateTime.now();
@@ -19,7 +22,7 @@ void main() {
       expect(model.date.isBefore(after) || model.date.isAtSameMomentAs(after), isTrue);
     });
 
-    test('falls back to a recent DateTime when date is garbage string', () {
+    test('falls back to a recent DateTime when date is garbage string', () { // AI-GENERATED
       final before = DateTime.now();
       final model = ItemReportModel.fromMap({'date': 'not-a-date'});
       final after = DateTime.now();
@@ -27,7 +30,7 @@ void main() {
       expect(model.date.isBefore(after) || model.date.isAtSameMomentAs(after), isTrue);
     });
 
-    test('falls back when date key is missing', () {
+    test('falls back when date key is missing', () { // AI-GENERATED
       final before = DateTime.now();
       final model = ItemReportModel.fromMap({});
       final after = DateTime.now();
@@ -36,43 +39,40 @@ void main() {
     });
   });
 
-  // ── fromMap status default ─────────────────────────────────────────────────
-
+  // AI-GENERATED: fromMap status default tests (lines 41–56)
   group('ItemReportModel.fromMap status', () {
-    test('status defaults to "open" when not provided', () {
+    test('status defaults to "open" when not provided', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({});
       expect(model.status, 'open');
     });
 
-    test('status is "closed" when explicitly set', () {
+    test('status is "closed" when explicitly set', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({'status': 'closed'});
       expect(model.status, 'closed');
     });
 
-    test('status is "open" when explicitly set', () {
+    test('status is "open" when explicitly set', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({'status': 'open'});
       expect(model.status, 'open');
     });
   });
 
-  // ── fromMap userEmail default ──────────────────────────────────────────────
-
+  // AI-GENERATED: fromMap userEmail default tests (lines 60–70)
   group('ItemReportModel.fromMap userEmail', () {
-    test('userEmail defaults to empty string when not provided', () {
+    test('userEmail defaults to empty string when not provided', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({});
       expect(model.userEmail, '');
     });
 
-    test('userEmail is parsed correctly when provided', () {
+    test('userEmail is parsed correctly when provided', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({'userEmail': 'user@inf.elte.hu'});
       expect(model.userEmail, 'user@inf.elte.hu');
     });
   });
 
-  // ── toMap structure ────────────────────────────────────────────────────────
-
+  // AI-GENERATED: toMap structure tests (lines 74–113)
   group('ItemReportModel.toMap structure', () {
-    test('toMap contains all 11 expected keys', () {
+    test('toMap contains all 11 expected keys', () { // AI-GENERATED
       final model = ItemReportModel(
         id: 'x',
         title: 'x',
@@ -95,7 +95,7 @@ void main() {
       }
     });
 
-    test('date is stored as ISO 8601 string in toMap', () {
+    test('date is stored as ISO 8601 string in toMap', () { // AI-GENERATED
       final date = DateTime(2024, 3, 15, 9, 30);
       final model = ItemReportModel(
         id: 'id',
@@ -113,10 +113,9 @@ void main() {
     });
   });
 
-  // ── roundtrip: fromMap → toMap → fromMap ──────────────────────────────────
-
+  // AI-GENERATED: Roundtrip serialization tests (lines 117–169)
   group('ItemReportModel roundtrip', () {
-    test('fromMap then toMap then fromMap produces identical field values', () {
+    test('fromMap then toMap then fromMap produces identical field values', () { // AI-GENERATED
       final original = {
         'id': 'rt_001',
         'title': 'Roundtrip Item',
@@ -148,7 +147,7 @@ void main() {
       expect(model2.userEmail, model1.userEmail);
     });
 
-    test('toMap output re-parses to same type and status', () {
+    test('toMap output re-parses to same type and status', () { // AI-GENERATED
       final model = ItemReportModel(
         id: 'x',
         title: 'x',
@@ -168,29 +167,27 @@ void main() {
     });
   });
 
-  // ── type / status values ───────────────────────────────────────────────────
-
+  // AI-GENERATED: type/status value preservation tests (lines 173–188)
   group('ItemReportModel type and status values', () {
-    test('type "lost" is preserved through fromMap', () {
+    test('type "lost" is preserved through fromMap', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({'type': 'lost'});
       expect(model.type, 'lost');
     });
 
-    test('type "found" is preserved through fromMap', () {
+    test('type "found" is preserved through fromMap', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({'type': 'found'});
       expect(model.type, 'found');
     });
 
-    test('status "closed" is preserved through fromMap', () {
+    test('status "closed" is preserved through fromMap', () { // AI-GENERATED
       final model = ItemReportModel.fromMap({'status': 'closed'});
       expect(model.status, 'closed');
     });
   });
 
-  // ── constructor defaults ───────────────────────────────────────────────────
-
+  // AI-GENERATED: Constructor default and field storage tests (lines 192–237)
   group('ItemReportModel constructor', () {
-    test('userEmail has default value of empty string', () {
+    test('userEmail has default value of empty string', () { // AI-GENERATED
       final model = ItemReportModel(
         id: 'id',
         title: 'title',
@@ -206,7 +203,7 @@ void main() {
       expect(model.userEmail, '');
     });
 
-    test('all required fields are stored correctly', () {
+    test('all required fields are stored correctly', () { // AI-GENERATED
       final date = DateTime(2024, 11, 20);
       final model = ItemReportModel(
         id: 'abc',
