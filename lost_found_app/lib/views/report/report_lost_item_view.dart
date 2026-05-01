@@ -104,6 +104,8 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
 
     if (_step == 4) {
       setState(() => _isSubmitting = true);
+      // Yield to the event loop so the spinner frame renders before the upload
+      await Future<void>.delayed(Duration.zero);
       try {
         final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
         final email = FirebaseAuth.instance.currentUser?.email ?? '';
@@ -230,8 +232,10 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: Column(
+      body: Stack(
         children: [
+          Column(
+            children: [
           _LostReportHeader(onBack: _goBack),
           Expanded(
             child: SingleChildScrollView(
@@ -353,6 +357,62 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
               ),
             ),
           ),
+        ],
+          ),
+          // Full-screen loading overlay while submitting
+          if (_isSubmitting)
+            AnimatedOpacity(
+              opacity: _isSubmitting ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.45),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 36,
+                      horizontal: 44,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 30,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          color: Color(0xFFE50008),
+                          strokeWidth: 3.5,
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          'Submitting report...',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111318),
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Please wait a moment',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF667085),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
