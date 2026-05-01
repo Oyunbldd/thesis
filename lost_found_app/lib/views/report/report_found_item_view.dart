@@ -82,6 +82,33 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
     }
   }
 
+  String? get _validationHint {
+    switch (_step) {
+      case 0:
+        if (_selectedImagePath == null) {
+          return 'Please add a photo or tap "Skip" to continue without one';
+        }
+        return null;
+      case 1:
+        if (_selectedCategory == null) return 'Please select a category';
+        return null;
+      case 2:
+        if (_selectedLocation == null && _dateFound == null) {
+          return 'Please select a location and the date you found it';
+        }
+        if (_selectedLocation == null) return 'Please select a location';
+        if (_dateFound == null) return 'Please select the date you found it';
+        return null;
+      case 3:
+        if (_contactController.text.trim().isEmpty) {
+          return 'Please enter your contact email';
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
+
   void _goBack() {
     if (_step == 0) {
       Navigator.of(context).pop();
@@ -320,6 +347,32 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
                         ),
                       ],
                     ),
+                    if (_validationHint != null) ...[
+                      const SizedBox(height: 12),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              size: 16,
+                              color: Color(0xFF3FA247),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _validationHint!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF255437),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

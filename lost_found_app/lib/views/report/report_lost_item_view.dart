@@ -99,6 +99,41 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
     }
   }
 
+  String? get _validationHint {
+    switch (_step) {
+      case 0:
+        if (_itemNameController.text.trim().isEmpty && _selectedCategory == null) {
+          return 'Please enter an item name and select a category';
+        }
+        if (_itemNameController.text.trim().isEmpty) {
+          return 'Please enter the item name';
+        }
+        if (_selectedCategory == null) {
+          return 'Please select a category';
+        }
+        return null;
+      case 1:
+        if (_selectedLocation == null && _dateLost == null) {
+          return 'Please select a location and the date you lost it';
+        }
+        if (_selectedLocation == null) return 'Please select a location';
+        if (_dateLost == null) return 'Please select the date you lost it';
+        return null;
+      case 2:
+        if (_descriptionController.text.trim().isEmpty) {
+          return 'Please describe the item so others can identify it';
+        }
+        return null;
+      case 4:
+        if (_contactController.text.trim().isEmpty) {
+          return 'Please enter your contact email';
+        }
+        return null;
+      default:
+        return null;
+    }
+  }
+
   Future<void> _goNext() async {
     if (!_canContinue || _isSubmitting) return;
 
@@ -352,6 +387,32 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
                         ),
                       ],
                     ),
+                    if (_validationHint != null) ...[
+                      const SizedBox(height: 12),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 200),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_outline_rounded,
+                              size: 16,
+                              color: Color(0xFFE50008),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _validationHint!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFFE50008),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
