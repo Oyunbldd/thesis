@@ -46,6 +46,7 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
 
   int _step = 0;
   bool _isSubmitting = false;
+  bool _isPickingImage = false;
   String? _selectedImagePath;
   String? _photoPermissionMessage;
   String? _selectedCategory;
@@ -164,19 +165,23 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
       return;
     }
 
-    final image = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
+    setState(() => _isPickingImage = true);
 
-    if (image == null) {
-      return;
+    try {
+      final image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _selectedImagePath = image.path;
+        _photoPermissionMessage = null;
+      });
+    } finally {
+      if (mounted) setState(() => _isPickingImage = false);
     }
-
-    setState(() {
-      _selectedImagePath = image.path;
-      _photoPermissionMessage = null;
-    });
   }
 
   Future<void> _pickDate() async {
@@ -245,6 +250,7 @@ class _ReportFoundItemViewState extends State<ReportFoundItemView> {
                         _FoundPhotoStep(
                           imagePath: _selectedImagePath,
                           permissionMessage: _photoPermissionMessage,
+                          isPickingImage: _isPickingImage,
                           onPickPhoto: _pickGalleryImage,
                           onSkip: _skipPhoto,
                         ),
@@ -510,12 +516,14 @@ class _FoundPhotoStep extends StatelessWidget {
   const _FoundPhotoStep({
     required this.imagePath,
     required this.permissionMessage,
+    required this.isPickingImage,
     required this.onPickPhoto,
     required this.onSkip,
   });
 
   final String? imagePath;
   final String? permissionMessage;
+  final bool isPickingImage;
   final VoidCallback onPickPhoto;
   final VoidCallback onSkip;
 
@@ -552,7 +560,31 @@ class _FoundPhotoStep extends StatelessWidget {
             ),
             child: Column(
               children: [
-                if (hasPhoto)
+                if (isPickingImage)
+                  const SizedBox(
+                    height: 220,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: Color(0xFF3FA247),
+                            strokeWidth: 3,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading photo...',
+                            style: TextStyle(
+                              color: Color(0xFF338347),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (hasPhoto)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(22),
                     child: Image.file(

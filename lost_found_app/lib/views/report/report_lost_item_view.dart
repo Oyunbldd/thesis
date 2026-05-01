@@ -60,6 +60,7 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
 
   int _step = 0;
   bool _isSubmitting = false;
+  bool _isPickingImage = false;
   String? _selectedTemplate;
   String? _selectedCategory;
   String? _selectedLocation;
@@ -190,19 +191,23 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
       return;
     }
 
-    final image = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
+    setState(() => _isPickingImage = true);
 
-    if (image == null) {
-      return;
+    try {
+      final image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _selectedImagePath = image.path;
+        _photoPermissionMessage = null;
+      });
+    } finally {
+      if (mounted) setState(() => _isPickingImage = false);
     }
-
-    setState(() {
-      _selectedImagePath = image.path;
-      _photoPermissionMessage = null;
-    });
   }
 
   static const _stepTitles = [
@@ -303,6 +308,7 @@ class _ReportLostItemViewState extends State<ReportLostItemView> {
                         _StepFour(
                           imagePath: _selectedImagePath,
                           permissionMessage: _photoPermissionMessage,
+                          isPickingImage: _isPickingImage,
                           onPickPhoto: _pickGalleryImage,
                           onSkip: _goNext,
                         ),
@@ -739,12 +745,14 @@ class _StepFour extends StatelessWidget {
   const _StepFour({
     required this.imagePath,
     required this.permissionMessage,
+    required this.isPickingImage,
     required this.onPickPhoto,
     required this.onSkip,
   });
 
   final String? imagePath;
   final String? permissionMessage;
+  final bool isPickingImage;
   final VoidCallback onPickPhoto;
   final VoidCallback onSkip;
 
@@ -777,7 +785,31 @@ class _StepFour extends StatelessWidget {
             ),
             child: Column(
               children: [
-                if (hasPhoto)
+                if (isPickingImage)
+                  const SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            color: Color(0xFF5B9DFF),
+                            strokeWidth: 3,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading photo...',
+                            style: TextStyle(
+                              color: Color(0xFF98A2B3),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (hasPhoto)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(22),
                     child: Image.file(
@@ -795,7 +827,11 @@ class _StepFour extends StatelessWidget {
                   ),
                 const SizedBox(height: 18),
                 Text(
-                  hasPhoto ? 'Photo selected' : 'Take Photo or Upload',
+                  isPickingImage
+                      ? 'Please wait...'
+                      : hasPhoto
+                          ? 'Photo selected'
+                          : 'Take Photo or Upload',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: const Color(0xFF475467),
                     fontSize: 18,
@@ -803,9 +839,11 @@ class _StepFour extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  hasPhoto
-                      ? 'Tap again to choose a different image'
-                      : 'PNG, JPG up to 10MB',
+                  isPickingImage
+                      ? ''
+                      : hasPhoto
+                          ? 'Tap again to choose a different image'
+                          : 'PNG, JPG up to 10MB',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: const Color(0xFF98A2B3),
                     fontSize: 16,
